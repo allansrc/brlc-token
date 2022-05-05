@@ -1,5 +1,6 @@
-require("@nomiclabs/hardhat-waffle");
-require('@openzeppelin/hardhat-upgrades');
+import "@nomiclabs/hardhat-waffle";
+import "@openzeppelin/hardhat-upgrades";
+import "solidity-coverage";
 
 /**
  * @type import('hardhat/config').HardhatUserConfig

@@ -60,7 +60,7 @@ describe("Contract 'RescuableUpgradeable'", async () => {
       const BRLCMock: ContractFactory = await ethers.getContractFactory("ERC20Mock");
       brlcMock = await BRLCMock.deploy("BRL Coin", "BRLC", 6);
       await brlcMock.deployed();
-      await brlcMock.mintTo(rescuableMock.address, tokenBalance);
+      await brlcMock.mint(rescuableMock.address, tokenBalance);
       const tx_response: TransactionResponse = await rescuableMock.setRescuer(user.address);
       await tx_response.wait();
     })

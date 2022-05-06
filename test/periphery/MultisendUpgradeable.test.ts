@@ -112,13 +112,13 @@ describe("Contract 'MultisendUpgradeable'", async () => {
     })
 
     it("Is reverted if the contract has not enough tokens to execute all transfers", async () => {
-      await brlcMock.mintTo(multisend.address, balanceTotal - balances[0]);
+      await brlcMock.mint(multisend.address, balanceTotal - balances[0]);
       await expect(multisend.connect(user).multisendToken(brlcMock.address, recipientAddresses, balances))
         .to.be.revertedWith(REVERT_MESSAGE_IF_TOKEN_TRANSFER_AMOUNT_EXCEEDS_BALANCE);
     });
 
     it("Transfers correct amount of tokens if the total is enough", async () => {
-      const tx_response = await brlcMock.connect(user).mintTo(multisend.address, balanceTotal);
+      const tx_response = await brlcMock.connect(user).mint(multisend.address, balanceTotal);
       await tx_response.wait();
 
       await expect(async () => {
@@ -133,7 +133,7 @@ describe("Contract 'MultisendUpgradeable'", async () => {
     });
 
     it("Emits the correct event", async () => {
-      const tx_response = await brlcMock.mintTo(multisend.address, balanceTotal);
+      const tx_response = await brlcMock.mint(multisend.address, balanceTotal);
       await tx_response.wait();
       await expect(multisend.connect(user).multisendToken(brlcMock.address, recipientAddresses, balances))
         .to.emit(multisend, "Multisend")

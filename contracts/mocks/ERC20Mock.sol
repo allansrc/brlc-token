@@ -9,7 +9,8 @@ contract ERC20Mock is ERC20 {
         _setupDecimals(decimals_);
     }
 
-    function mintTo(address account, uint256 amount) public {
+    function mint(address account, uint256 amount) external returns (bool) {
         _mint(account, amount);
+        return true;
     }
 }

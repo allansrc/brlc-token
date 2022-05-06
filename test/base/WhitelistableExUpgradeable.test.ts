@@ -22,6 +22,14 @@ describe("Contract 'WhitelistableExUpgradeable'", async () => {
     [deployer, user1, user2] = await ethers.getSigners();
   });
 
+  it("Contains functions inherited from the 'WhitelistableUpgradeable' contract", () => {
+    expect(whitelistableExMock.functions['getWhitelistAdmin()']).to.exist
+    expect(whitelistableExMock.functions['isWhitelisted(address)']).to.exist
+    expect(whitelistableExMock.functions['whitelist(address)']).to.exist
+    expect(whitelistableExMock.functions['unWhitelist(address)']).to.exist
+    expect(whitelistableExMock.functions['setWhitelistAdmin(address)']).to.exist
+  })
+
   it("The initialize function can't be called more than once", async () => {
     await expect(whitelistableExMock.initialize())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);

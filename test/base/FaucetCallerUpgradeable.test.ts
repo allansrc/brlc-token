@@ -11,7 +11,7 @@ describe("Contract 'FaucetCallerUpgradeable'", async () => {
   let faucetCallerMock: Contract;
   let faucetMock: Contract;
   let deployer: SignerWithAddress;
-  let user1: SignerWithAddress;
+  let user: SignerWithAddress;
 
   beforeEach(async () => {
     const FaucetCallerMock: ContractFactory = await ethers.getContractFactory("FaucetCallerMockUpgradeable");
@@ -22,7 +22,7 @@ describe("Contract 'FaucetCallerUpgradeable'", async () => {
     faucetMock = await FaucetMock.deploy();
     await faucetMock.deployed();
 
-    [deployer, user1] = await ethers.getSigners();
+    [deployer, user] = await ethers.getSigners();
   });
 
   it("The initialize function can't be called more than once", async () => {
@@ -37,7 +37,7 @@ describe("Contract 'FaucetCallerUpgradeable'", async () => {
 
   describe("Function 'setFaucet()'", async () => {
     it("Is reverted if is called not by the owner", async () => {
-      await expect(faucetCallerMock.connect(user1).setFaucet(faucetMock.address))
+      await expect(faucetCallerMock.connect(user).setFaucet(faucetMock.address))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CALLER_IS_NOT_OWNER);
     });
 
@@ -80,7 +80,7 @@ describe("Contract 'FaucetCallerUpgradeable'", async () => {
   describe("Function 'faucetRequest()'", async () => {
     it("Does not call the 'withdraw()' function of the faucet if the faucet address is zero", async () => {
       expect(await faucetCallerMock.getFaucet()).to.equal(ethers.constants.AddressZero);
-      const tx_response = await faucetCallerMock.faucetRequest(user1.address);
+      const tx_response = await faucetCallerMock.faucetRequest(user.address);
       await tx_response.wait();
       expect(await faucetMock.lastWithdrawAddress()).to.equal(ethers.constants.AddressZero);
     });
@@ -89,9 +89,9 @@ describe("Contract 'FaucetCallerUpgradeable'", async () => {
       let tx_response: TransactionResponse = await faucetCallerMock.setFaucet(faucetMock.address);
       await tx_response.wait();
       expect(await faucetCallerMock.getFaucet()).to.equal(faucetMock.address);
-      tx_response = await faucetCallerMock.faucetRequest(user1.address);
+      tx_response = await faucetCallerMock.faucetRequest(user.address);
       await tx_response.wait();
-      expect(await faucetMock.lastWithdrawAddress()).to.equal(user1.address);
+      expect(await faucetMock.lastWithdrawAddress()).to.equal(user.address);
     });
   });
 });

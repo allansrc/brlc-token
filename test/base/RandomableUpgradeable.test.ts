@@ -10,14 +10,14 @@ describe("Contract 'RandomableUpgradeable'", async () => {
 
   let randomableMock: Contract;
   let deployer: SignerWithAddress;
-  let user1: SignerWithAddress;
+  let user: SignerWithAddress;
 
   beforeEach(async () => {
     const RandomableMock: ContractFactory = await ethers.getContractFactory("RandomableMockUpgradeable");
     randomableMock = await upgrades.deployProxy(RandomableMock);
     await randomableMock.deployed();
 
-    [deployer, user1] = await ethers.getSigners();
+    [deployer, user] = await ethers.getSigners();
   });
 
   it("The initialize function can't be called more than once", async () => {
@@ -32,12 +32,12 @@ describe("Contract 'RandomableUpgradeable'", async () => {
 
   describe("Function 'setRandomProvider()'", async () => {
     it("Is reverted if is called not by the owner", async () => {
-      await expect(randomableMock.connect(user1).setRandomProvider(user1.address))
+      await expect(randomableMock.connect(user).setRandomProvider(user.address))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CALLER_IS_NOT_OWNER);
     });
 
     it("Executes successfully if is called by the owner", async () => {
-      const expectedRandomProviderAddress: string = user1.address;
+      const expectedRandomProviderAddress: string = user.address;
       const tx_response: TransactionResponse = await randomableMock.setRandomProvider(expectedRandomProviderAddress);
       await tx_response.wait();
       const actualRandomProviderAddress: string = await randomableMock.getRandomProvider();
@@ -45,7 +45,7 @@ describe("Contract 'RandomableUpgradeable'", async () => {
     })
 
     it("Emits the correct event", async () => {
-      const randomProviderAddress: string = user1.address;
+      const randomProviderAddress: string = user.address;
       await expect(randomableMock.setRandomProvider(randomProviderAddress))
         .to.emit(randomableMock, "RandomProviderChanged")
         .withArgs(randomProviderAddress);

@@ -11,14 +11,14 @@ describe("Contract 'RescuableUpgradeable'", async () => {
 
   let rescuableMock: Contract;
   let deployer: SignerWithAddress;
-  let user1: SignerWithAddress;
+  let user: SignerWithAddress;
 
   beforeEach(async () => {
     const RescuableMock: ContractFactory = await ethers.getContractFactory("RescuableMockUpgradeable");
     rescuableMock = await upgrades.deployProxy(RescuableMock);
     await rescuableMock.deployed();
 
-    [deployer, user1] = await ethers.getSigners();
+    [deployer, user] = await ethers.getSigners();
   });
 
   it("The initialize function can't be called more than once", async () => {
@@ -33,12 +33,12 @@ describe("Contract 'RescuableUpgradeable'", async () => {
 
   describe("Function 'setRescuer()'", async () => {
     it("Is reverted if is called not by the owner", async () => {
-      await expect(rescuableMock.connect(user1).setRescuer(user1.address))
+      await expect(rescuableMock.connect(user).setRescuer(user.address))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CALLER_IS_NOT_OWNER);
     });
 
     it("Executes successfully if is called by the owner", async () => {
-      const expectedRescuerAddress: string = user1.address;
+      const expectedRescuerAddress: string = user.address;
       const tx_response: TransactionResponse = await rescuableMock.setRescuer(expectedRescuerAddress);
       await tx_response.wait();
       const actualRescuerAddress: string = await rescuableMock.getRescuer();
@@ -46,7 +46,7 @@ describe("Contract 'RescuableUpgradeable'", async () => {
     })
 
     it("Emits the correct event", async () => {
-      const rescuerAddress: string = user1.address;
+      const rescuerAddress: string = user.address;
       await expect(rescuableMock.setRescuer(rescuerAddress))
         .to.emit(rescuableMock, "RescuerChanged")
         .withArgs(rescuerAddress);
@@ -61,19 +61,19 @@ describe("Contract 'RescuableUpgradeable'", async () => {
       brlcMock = await BRLCMock.deploy("BRL Coin", "BRLC", 6);
       await brlcMock.deployed();
       await brlcMock.mintTo(rescuableMock.address, tokenBalance);
-      const tx_response: TransactionResponse = await rescuableMock.setRescuer(user1.address);
+      const tx_response: TransactionResponse = await rescuableMock.setRescuer(user.address);
       await tx_response.wait();
     })
 
     it("Is reverted if is called not by the rescuer", async () => {
-      await expect(rescuableMock.rescueERC20(brlcMock.address, user1.address, tokenBalance))
+      await expect(rescuableMock.rescueERC20(brlcMock.address, user.address, tokenBalance))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CALLER_IS_NOT_RESCUER);
     });
 
     it("Transfers the correct amount of tokens", async () => {
       await expect(async () => {
         const tx_response: TransactionResponse =
-          await rescuableMock.connect(user1).rescueERC20(brlcMock.address, deployer.address, tokenBalance);
+          await rescuableMock.connect(user).rescueERC20(brlcMock.address, deployer.address, tokenBalance);
         await tx_response.wait();
       }).to.changeTokenBalances(
         brlcMock,

@@ -11,14 +11,14 @@ describe("Contract 'PausableExUpgradeable'", async () => {
 
   let pausableExMock: Contract;
   let deployer: SignerWithAddress;
-  let user1: SignerWithAddress;
+  let user: SignerWithAddress;
 
   beforeEach(async () => {
     const PausableExMock: ContractFactory = await ethers.getContractFactory("PausableExMockUpgradeable");
     pausableExMock = await upgrades.deployProxy(PausableExMock);
     await pausableExMock.deployed();
 
-    [deployer, user1] = await ethers.getSigners();
+    [deployer, user] = await ethers.getSigners();
   });
 
   it("The initialize function can't be called more than once", async () => {
@@ -33,12 +33,12 @@ describe("Contract 'PausableExUpgradeable'", async () => {
 
   describe("Function 'setPauser()'", async () => {
     it("Is reverted if is called not by the owner", async () => {
-      await expect(pausableExMock.connect(user1).setPauser(user1.address))
+      await expect(pausableExMock.connect(user).setPauser(user.address))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CALLER_IS_NOT_OWNER);
     });
 
     it("Executes successfully if is called by the owner", async () => {
-      const expectedPauserAddress: string = user1.address;
+      const expectedPauserAddress: string = user.address;
       const tx_response: TransactionResponse = await pausableExMock.setPauser(expectedPauserAddress);
       await tx_response.wait();
       const actualPauserAddress: string = await pausableExMock.getPauser();
@@ -46,7 +46,7 @@ describe("Contract 'PausableExUpgradeable'", async () => {
     })
 
     it("Emits the correct event", async () => {
-      const pauserAddress: string = user1.address;
+      const pauserAddress: string = user.address;
       await expect(pausableExMock.setPauser(pauserAddress))
         .to.emit(pausableExMock, "PauserChanged")
         .withArgs(pauserAddress);
@@ -55,7 +55,7 @@ describe("Contract 'PausableExUpgradeable'", async () => {
 
   describe("Function 'pause()'", async () => {
     beforeEach(async () => {
-      const tx_response: TransactionResponse = await pausableExMock.setPauser(user1.address);
+      const tx_response: TransactionResponse = await pausableExMock.setPauser(user.address);
       await tx_response.wait();
     })
 
@@ -65,23 +65,23 @@ describe("Contract 'PausableExUpgradeable'", async () => {
     });
 
     it("Executes successfully if is called by the pauser", async () => {
-      const tx_response: TransactionResponse = await pausableExMock.connect(user1).pause();
+      const tx_response: TransactionResponse = await pausableExMock.connect(user).pause();
       await tx_response.wait();
       expect(await pausableExMock.paused()).to.equal(true);
     });
 
     it("Emits the correct event", async () => {
-      await expect(pausableExMock.connect(user1).pause())
+      await expect(pausableExMock.connect(user).pause())
         .to.emit(pausableExMock, "Paused")
-        .withArgs(user1.address);
+        .withArgs(user.address);
     });
   });
 
   describe("Function 'unpause()'", async () => {
     beforeEach(async () => {
-      let tx_response: TransactionResponse = await pausableExMock.setPauser(user1.address);
+      let tx_response: TransactionResponse = await pausableExMock.setPauser(user.address);
       await tx_response.wait();
-      tx_response = await pausableExMock.connect(user1).pause();
+      tx_response = await pausableExMock.connect(user).pause();
       await tx_response.wait();
     })
 
@@ -91,15 +91,15 @@ describe("Contract 'PausableExUpgradeable'", async () => {
     });
 
     it("Executes successfully if is called by the pauser", async () => {
-      const tx_response: TransactionResponse = await pausableExMock.connect(user1).unpause();
+      const tx_response: TransactionResponse = await pausableExMock.connect(user).unpause();
       await tx_response.wait();
       expect(await pausableExMock.paused()).to.equal(false);
     });
 
     it("Emits the correct event", async () => {
-      await expect(pausableExMock.connect(user1).unpause())
+      await expect(pausableExMock.connect(user).unpause())
         .to.emit(pausableExMock, "Unpaused")
-        .withArgs(user1.address);
+        .withArgs(user.address);
     });
   });
 });

@@ -3,6 +3,7 @@ import { expect } from "chai";
 import { ContractFactory, Contract } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { countNumberArrayTotal } from "../../test-utils/misc";
+import { TransactionResponse } from "@ethersproject/abstract-provider"
 
 describe("Contract 'MultisendUpgradeable'", async () => {
   const REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED = 'Initializable: contract is already initialized';
@@ -74,7 +75,7 @@ describe("Contract 'MultisendUpgradeable'", async () => {
       //Configure the tested contract
       await multisend.setPauser(deployer.address);
       await multisend.setWhitelistEnabled(true);
-      let tx_response = await multisend.setWhitelistAdmin(user.address);
+      let tx_response: TransactionResponse = await multisend.setWhitelistAdmin(user.address);
       await tx_response.wait();
       tx_response = await multisend.connect(user).updateWhitelister(user.address, true);
       await tx_response.wait();
@@ -90,7 +91,7 @@ describe("Contract 'MultisendUpgradeable'", async () => {
     })
 
     it("Is reverted if the contract is paused", async () => {
-      const tx_response = await multisend.pause();
+      const tx_response: TransactionResponse = await multisend.pause();
       await tx_response.wait();
       await expect(multisend.connect(user).multisendToken(brlcMock.address, recipientAddresses, balances))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
@@ -118,11 +119,11 @@ describe("Contract 'MultisendUpgradeable'", async () => {
     });
 
     it("Transfers correct amount of tokens if the total is enough", async () => {
-      const tx_response = await brlcMock.connect(user).mint(multisend.address, balanceTotal);
+      const tx_response: TransactionResponse = await brlcMock.connect(user).mint(multisend.address, balanceTotal);
       await tx_response.wait();
 
       await expect(async () => {
-        const tx_response =
+        const tx_response: TransactionResponse =
           await multisend.connect(user).multisendToken(brlcMock.address, recipientAddresses, balances);
         await tx_response.wait();
       }).to.changeTokenBalances(
@@ -133,7 +134,7 @@ describe("Contract 'MultisendUpgradeable'", async () => {
     });
 
     it("Emits the correct event", async () => {
-      const tx_response = await brlcMock.mint(multisend.address, balanceTotal);
+      const tx_response: TransactionResponse = await brlcMock.mint(multisend.address, balanceTotal);
       await tx_response.wait();
       await expect(multisend.connect(user).multisendToken(brlcMock.address, recipientAddresses, balances))
         .to.emit(multisend, "Multisend")

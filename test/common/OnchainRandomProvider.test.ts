@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { ContractFactory, Contract } from "ethers";
+import { ContractFactory, Contract, BigNumber } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { TransactionResponse } from "@ethersproject/abstract-provider"
 
@@ -18,19 +18,19 @@ describe("Contract 'OnhainRandomProvider'", async () => {
   });
 
   it("Returns random numbers", async () => {
-    const randomNumber1 = await onchainRandomProvider.getRandomness();
+    const randomNumber1: BigNumber = await onchainRandomProvider.getRandomness();
 
     // Wait for the next block
     let tx_response: TransactionResponse = await deployer.sendTransaction({ to: user.address, value: 100 });
     await tx_response.wait();
 
-    const randomNumber2 = await onchainRandomProvider.getRandomness();
+    const randomNumber2: BigNumber = await onchainRandomProvider.getRandomness();
 
     // Wait for the next block
     tx_response = await deployer.sendTransaction({ to: user.address, value: 100 });
     await tx_response.wait();
 
-    const randomNumber3 = await onchainRandomProvider.getRandomness();
+    const randomNumber3: BigNumber = await onchainRandomProvider.getRandomness();
 
     // Compare different number for each request
     expect(randomNumber1).to.not.equal(randomNumber2);

@@ -71,7 +71,7 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
   describe("Function 'isWhitelistEnabled()'", async () => {
     it("Returns an expected value", async () => {
       let valueOfWhitelistEnabling: boolean = true;
-      let tx_response = await whitelistableMock.setWhitelistEnabled(valueOfWhitelistEnabling);
+      let tx_response: TransactionResponse = await whitelistableMock.setWhitelistEnabled(valueOfWhitelistEnabling);
       await tx_response.wait();
 
       expect(await whitelistableMock.isWhitelistEnabled()).to.equal(valueOfWhitelistEnabling);

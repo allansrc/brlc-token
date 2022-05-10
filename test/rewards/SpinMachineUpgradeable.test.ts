@@ -167,7 +167,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
         const txResponse: TransactionResponse = await spinMachine.grantExtraSpin(spinOwner.address, extraSpinCount);
         await txResponse.wait();
         const newSpinsCount: BigNumber = await spinMachine.extraSpins(spinOwner.address);
-        expect(newSpinsCount).to.equal(oldSpinsCount + extraSpinCount);
+        expect(newSpinsCount).to.equal(oldSpinsCount.add(BigNumber.from(extraSpinCount)));
       });
 
       it("Emits the correct event", async () => {
@@ -240,7 +240,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
         txResponse = await spinMachine.connect(user1).buyExtraSpin(user2.address, purchasedSpinCount);
         await txResponse.wait();
         const newSpinCount: BigNumber = await spinMachine.extraSpins(user2.address);
-        expect(newSpinCount).to.equal(oldSpinCount + purchasedSpinCount);
+        expect(newSpinCount).to.equal(oldSpinCount.add(BigNumber.from(purchasedSpinCount)));
       });
 
       it("Transfers the correct amount of tokens", async () => {
@@ -465,7 +465,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
           await txResponse.wait();
           const newExtraSpinCount: BigNumber = await spinMachine.extraSpins(user1.address);
           expect(await spinMachine.canSpin(user1.address)).to.equal(false);
-          expect(newExtraSpinCount).to.equal(oldExtraSpinCount - 1);
+          expect(newExtraSpinCount).to.equal(oldExtraSpinCount.sub(BigNumber.from(1)));
         });
 
         it("Emits the correct event", async () => {
@@ -527,7 +527,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
           await txResponse.wait();
           const newExtraSpinCount: BigNumber = await spinMachine.extraSpins(user1.address);
           expect(await spinMachine.canSpin(user1.address)).to.equal(false);
-          expect(newExtraSpinCount).to.equal(oldExtraSpinCount - 1);
+          expect(newExtraSpinCount).to.equal(oldExtraSpinCount.sub(BigNumber.from(1)));
         });
 
         it("Emits the correct event", async () => {

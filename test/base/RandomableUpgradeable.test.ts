@@ -13,7 +13,7 @@ describe("Contract 'RandomableUpgradeable'", async () => {
   let user: SignerWithAddress;
 
   beforeEach(async () => {
-    const RandomableMock: ContractFactory = await ethers.getContractFactory("RandomableMockUpgradeable");
+    const RandomableMock: ContractFactory = await ethers.getContractFactory("RandomableUpgradeableMock");
     randomableMock = await upgrades.deployProxy(RandomableMock);
     await randomableMock.deployed();
 

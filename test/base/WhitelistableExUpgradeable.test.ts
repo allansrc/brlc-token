@@ -14,7 +14,7 @@ describe("Contract 'WhitelistableExUpgradeable'", async () => {
   let user2: SignerWithAddress;
 
   beforeEach(async () => {
-    const WhitelistableExMock: ContractFactory = await ethers.getContractFactory("WhitelistableExMockUpgradeable");
+    const WhitelistableExMock: ContractFactory = await ethers.getContractFactory("WhitelistableExUpgradeableMock");
     whitelistableExMock = await upgrades.deployProxy(WhitelistableExMock);
     await whitelistableExMock.deployed();
 

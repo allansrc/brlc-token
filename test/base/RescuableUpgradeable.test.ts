@@ -14,7 +14,7 @@ describe("Contract 'RescuableUpgradeable'", async () => {
   let user: SignerWithAddress;
 
   beforeEach(async () => {
-    const RescuableMock: ContractFactory = await ethers.getContractFactory("RescuableMockUpgradeable");
+    const RescuableMock: ContractFactory = await ethers.getContractFactory("RescuableUpgradeableMock");
     rescuableMock = await upgrades.deployProxy(RescuableMock);
     await rescuableMock.deployed();
 

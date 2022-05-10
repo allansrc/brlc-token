@@ -14,7 +14,7 @@ describe("Contract 'PausableExUpgradeable'", async () => {
   let user: SignerWithAddress;
 
   beforeEach(async () => {
-    const PausableExMock: ContractFactory = await ethers.getContractFactory("PausableExMockUpgradeable");
+    const PausableExMock: ContractFactory = await ethers.getContractFactory("PausableExUpgradeableMock");
     pausableExMock = await upgrades.deployProxy(PausableExMock);
     await pausableExMock.deployed();
 

@@ -5,10 +5,10 @@ pragma solidity >=0.6.0 <0.8.0;
 import {RandomableUpgradeable} from "../base/RandomableUpgradeable.sol";
 
 /**
- * @title RandomableMockUpgradeable contract.
+ * @title RandomableUpgradeableMock contract.
  * @notice For test purpose of the "RandomableUpgradeable" contract.
  */
-contract RandomableMockUpgradeable is RandomableUpgradeable {
+contract RandomableUpgradeableMock is RandomableUpgradeable {
 
     //This function is intentionally deprived the "initializer" modifier to test that the ancestor contract has it
     function initialize() public {

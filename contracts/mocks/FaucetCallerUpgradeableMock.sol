@@ -5,10 +5,10 @@ pragma solidity >=0.6.0 <0.8.0;
 import {FaucetCallerUpgradeable} from "../base/FaucetCallerUpgradeable.sol";
 
 /**
- * @title FaucetCallerMockUpgradeable contract.
+ * @title FaucetCallerUpgradeableMock contract.
  * @notice For test purpose of the "FaucetCallerUpgradeable" contract.
  */
-contract FaucetCallerMockUpgradeable is FaucetCallerUpgradeable {
+contract FaucetCallerUpgradeableMock is FaucetCallerUpgradeable {
 
     //This function is intentionally deprived the "initializer" modifier to test that the ancestor contract has it
     function initialize() public {

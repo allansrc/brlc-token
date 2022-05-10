@@ -17,7 +17,7 @@ describe("Contract 'BlacklistableUpgradeable'", async () => {
   let user2: SignerWithAddress;
 
   beforeEach(async () => {
-    const BlacklistableMock: ContractFactory = await ethers.getContractFactory("BlacklistableMockUpgradeable");
+    const BlacklistableMock: ContractFactory = await ethers.getContractFactory("BlacklistableUpgradeableMock");
     blacklistableMock = await upgrades.deployProxy(BlacklistableMock);
     await blacklistableMock.deployed();
 

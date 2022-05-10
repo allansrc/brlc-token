@@ -14,7 +14,7 @@ describe("Contract 'FaucetCallerUpgradeable'", async () => {
   let user: SignerWithAddress;
 
   beforeEach(async () => {
-    const FaucetCallerMock: ContractFactory = await ethers.getContractFactory("FaucetCallerMockUpgradeable");
+    const FaucetCallerMock: ContractFactory = await ethers.getContractFactory("FaucetCallerUpgradeableMock");
     faucetCallerMock = await upgrades.deployProxy(FaucetCallerMock);
     await faucetCallerMock.deployed();
 

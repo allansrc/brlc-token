@@ -5,10 +5,10 @@ pragma solidity >=0.6.0 <0.8.0;
 import {WhitelistableUpgradeable} from "../base/WhitelistableUpgradeable.sol";
 
 /**
- * @title WhitelistableMockUpgradeable contract.
+ * @title WhitelistableUpgradeableMock contract.
  * @notice For test purpose of the "WhitelistableUpgradeable" contract.
  */
-contract WhitelistableMockUpgradeable is WhitelistableUpgradeable {
+contract WhitelistableUpgradeableMock is WhitelistableUpgradeable {
 
     bool private _isWhitelistEnabled;
     address private _stubWhitelister;

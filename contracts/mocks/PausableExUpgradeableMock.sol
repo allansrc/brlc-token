@@ -5,10 +5,10 @@ pragma solidity >=0.6.0 <0.8.0;
 import {PausableExUpgradeable} from "../base/PausableExUpgradeable.sol";
 
 /**
- * @title PausableExMockUpgradeable contract.
+ * @title PausableExUpgradeableMock contract.
  * @notice For test purpose of the "PausableExUpgradeable" contract.
  */
-contract PausableExMockUpgradeable is PausableExUpgradeable {
+contract PausableExUpgradeableMock is PausableExUpgradeable {
 
     //This function is intentionally deprived the "initializer" modifier to test that the ancestor contract has it
     function initialize() public {

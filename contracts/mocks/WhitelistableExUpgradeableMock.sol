@@ -5,10 +5,10 @@ pragma solidity >=0.6.0 <0.8.0;
 import {WhitelistableExUpgradeable} from "../base/WhitelistableExUpgradeable.sol";
 
 /**
- * @title WhitelistableExMockUpgradeable contract.
+ * @title WhitelistableExUpgradeableMock contract.
  * @notice For test purpose of the "WhitelistableExUpgradeable" contract.
  */
-contract WhitelistableExMockUpgradeable is WhitelistableExUpgradeable {
+contract WhitelistableExUpgradeableMock is WhitelistableExUpgradeable {
 
     //This function is intentionally deprived the "initializer" modifier to test that the ancestor contract has it
     function initialize() public {

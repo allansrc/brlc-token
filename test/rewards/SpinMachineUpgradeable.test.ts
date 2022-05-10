@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import { ContractFactory, Contract, BigNumber } from "ethers";

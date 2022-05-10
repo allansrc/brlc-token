@@ -15,9 +15,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
   const REVERT_MESSAGE_IF_PRIZES_ARRAY_IS_EMPTY = "SpinMachineV1: prizes array cannot be empty";
   const REVERT_MESSAGE_IF_TOKEN_TRANSFER_AMOUNT_EXCEEDS_BALANCE = "ERC20: transfer amount exceeds balance";
 
-  let SpinMachine: ContractFactory;
   let spinMachine: Contract;
-  let BRLCMock: ContractFactory;
   let brlcMock: Contract;
   let deployer: SignerWithAddress;
   let user1: SignerWithAddress;
@@ -25,7 +23,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
   beforeEach(async () => {
     // Deploy BRLC
-    BRLCMock = await ethers.getContractFactory("ERC20Mock");
+    const BRLCMock: ContractFactory = await ethers.getContractFactory("ERC20Mock");
     brlcMock = await BRLCMock.deploy("BRL Coin", "BRLC", 6);
     await brlcMock.deployed();
 
@@ -37,7 +35,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
     await onchainRandomProvider.deployed();
 
     // Deploy SpinMachine
-    SpinMachine = await ethers.getContractFactory("SpinMachineUpgradeableMock");
+    const SpinMachine: ContractFactory = await ethers.getContractFactory("SpinMachineUpgradeableMock");
     spinMachine = await upgrades.deployProxy(SpinMachine, [brlcMock.address]);
     await spinMachine.deployed();
     const txResponse: TransactionResponse = await spinMachine.setRandomProvider(onchainRandomProvider.address);

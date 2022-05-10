@@ -5,13 +5,12 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { TransactionResponse } from "@ethersproject/abstract-provider"
 
 describe("Contract 'OnhainRandomProvider'", async () => {
-  let OnchainRandomProvider: ContractFactory;
   let onchainRandomProvider: Contract;
   let deployer: SignerWithAddress;
   let user: SignerWithAddress;
 
   beforeEach(async () => {
-    OnchainRandomProvider = await ethers.getContractFactory("OnchainRandomProvider");
+    const OnchainRandomProvider: ContractFactory = await ethers.getContractFactory("OnchainRandomProvider");
     onchainRandomProvider = await OnchainRandomProvider.deploy();
     await onchainRandomProvider.deployed();
     [deployer, user] = await ethers.getSigners();

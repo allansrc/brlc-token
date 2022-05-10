@@ -35,32 +35,6 @@ describe("Contract 'MultisendUpgradeable'", async () => {
     [deployer, user] = await ethers.getSigners();
   });
 
-  it("Contains functions inherited from the 'RescuableUpgradeable' contract", () => {
-    expect(multisend.functions['getRescuer()']).to.exist
-    expect(multisend.functions['setRescuer(address)']).to.exist
-    expect(multisend.functions['rescueERC20(address,address,uint256)']).to.exist
-  })
-
-  it("Contains functions inherited from the 'PausableExUpgradeable' contract", () => {
-    expect(multisend.functions['getPauser()']).to.exist
-    expect(multisend.functions['setPauser(address)']).to.exist
-    expect(multisend.functions['pause()']).to.exist
-    expect(multisend.functions['unpause()']).to.exist
-    expect(multisend.functions['paused()']).to.exist
-  })
-
-  it("Contains functions inherited from the 'WhitelistableExUpgradeable' contract", () => {
-    expect(multisend.functions['isWhitelister(address)']).to.exist
-    expect(multisend.functions['isWhitelistEnabled()']).to.exist
-    expect(multisend.functions['updateWhitelister(address,bool)']).to.exist
-    expect(multisend.functions['setWhitelistEnabled(bool)']).to.exist
-    expect(multisend.functions['getWhitelistAdmin()']).to.exist
-    expect(multisend.functions['isWhitelisted(address)']).to.exist
-    expect(multisend.functions['whitelist(address)']).to.exist
-    expect(multisend.functions['unWhitelist(address)']).to.exist
-    expect(multisend.functions['setWhitelistAdmin(address)']).to.exist
-  })
-
   it("The initialize function can't be called more than once", async () => {
     await expect(multisend.initialize())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);

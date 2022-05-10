@@ -36,32 +36,6 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
     [deployer, user] = await ethers.getSigners();
   });
 
-  it("Contains functions inherited from the 'RescuableUpgradeable' contract", () => {
-    expect(pixCashier.functions['getRescuer()']).to.exist
-    expect(pixCashier.functions['setRescuer(address)']).to.exist
-    expect(pixCashier.functions['rescueERC20(address,address,uint256)']).to.exist
-  })
-
-  it("Contains functions inherited from the 'PausableExUpgradeable' contract", () => {
-    expect(pixCashier.functions['getPauser()']).to.exist
-    expect(pixCashier.functions['setPauser(address)']).to.exist
-    expect(pixCashier.functions['pause()']).to.exist
-    expect(pixCashier.functions['unpause()']).to.exist
-    expect(pixCashier.functions['paused()']).to.exist
-  })
-
-  it("Contains functions inherited from the 'WhitelistableExUpgradeable' contract", () => {
-    expect(pixCashier.functions['isWhitelister(address)']).to.exist
-    expect(pixCashier.functions['isWhitelistEnabled()']).to.exist
-    expect(pixCashier.functions['updateWhitelister(address,bool)']).to.exist
-    expect(pixCashier.functions['setWhitelistEnabled(bool)']).to.exist
-    expect(pixCashier.functions['getWhitelistAdmin()']).to.exist
-    expect(pixCashier.functions['isWhitelisted(address)']).to.exist
-    expect(pixCashier.functions['whitelist(address)']).to.exist
-    expect(pixCashier.functions['unWhitelist(address)']).to.exist
-    expect(pixCashier.functions['setWhitelistAdmin(address)']).to.exist
-  })
-
   it("The initialize function can't be called more than once", async () => {
     await expect(pixCashier.initialize(brlcMock.address))
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
@@ -100,7 +74,7 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
         .to.be.revertedWith(REVERT_MESSAGE_IF_ADDRESS_IS_ZERO);
     })
 
-    it("Mint correct amount of tokens", async () => {
+    it("Mints correct amount of tokens", async () => {
       await expect(async () => {
         const tx_response: TransactionResponse =
           await pixCashier.connect(user).cashIn(cashierClient.address, tokenAmount);
@@ -195,11 +169,10 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
         .to.be.revertedWith(REVERT_MESSAGE_IF_CASH_OUT_BALANCE_IS_NOT_ENOUGH_TO_CONFIRM);
     });
 
-    it("Burn correct amount of tokens and changes cash-out balances accordingly", async () => {
+    it("Burns correct amount of tokens and changes cash-out balances accordingly", async () => {
       const tx_response: TransactionResponse = await pixCashier.connect(cashierClient).cashOut(tokenAmount);
       await tx_response.wait();
       const cashOutBalanceBefore: number = await pixCashier.cashOutBalanceOf(cashierClient.address);
-      console.log(cashOutBalanceBefore)
       await expect(async () => {
         const tx_response: TransactionResponse = await pixCashier.connect(cashierClient).cashOutConfirm(tokenAmount);
         await tx_response.wait();
@@ -227,7 +200,7 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
 
     beforeEach(async () => {
       cashierClient = deployer;
-      await connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
+      await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
       await brlcMock.mint(cashierClient.address, tokenAmount);
       const tx_response: TransactionResponse = await pixCashier.setPauser(deployer.address);
       await tx_response.wait();

@@ -5,7 +5,6 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { TransactionResponse } from "@ethersproject/abstract-provider"
 
 describe("Contract 'WhitelistableExUpgradeable'", async () => {
-  const REVERT_MESSAGE_IF_CALLER_IS_NOT_OWNER = "Ownable: caller is not the owner";
   const REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED = 'Initializable: contract is already initialized';
   const REVERT_MESSAGE_IF_CALLER_IS_NOT_WHITELIST_ADMIN = 'Whitelistable: caller is not the whitelist admin';
 
@@ -22,14 +21,6 @@ describe("Contract 'WhitelistableExUpgradeable'", async () => {
     [deployer, user1, user2] = await ethers.getSigners();
   });
 
-  it("Contains functions inherited from the 'WhitelistableUpgradeable' contract", () => {
-    expect(whitelistableExMock.functions['getWhitelistAdmin()']).to.exist
-    expect(whitelistableExMock.functions['isWhitelisted(address)']).to.exist
-    expect(whitelistableExMock.functions['whitelist(address)']).to.exist
-    expect(whitelistableExMock.functions['unWhitelist(address)']).to.exist
-    expect(whitelistableExMock.functions['setWhitelistAdmin(address)']).to.exist
-  })
-
   it("The initialize function can't be called more than once", async () => {
     await expect(whitelistableExMock.initialize())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
@@ -39,26 +30,6 @@ describe("Contract 'WhitelistableExUpgradeable'", async () => {
     await expect(whitelistableExMock.initialize_unchained())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
   })
-
-  describe("Function 'setWhitelistEnabled()'", async () => {
-    it("Is reverted if is called not by the owner", async () => {
-      await expect(whitelistableExMock.connect(user1).setWhitelistEnabled(deployer.address))
-        .to.be.revertedWith(REVERT_MESSAGE_IF_CALLER_IS_NOT_OWNER);
-    });
-
-    it("Executes successfully if is called by the owner", async () => {
-      expect(await whitelistableExMock.isWhitelistEnabled()).to.equal(false);
-      const tx_response: TransactionResponse = await whitelistableExMock.setWhitelistEnabled(true);
-      await tx_response.wait();
-      expect(await whitelistableExMock.isWhitelistEnabled()).to.equal(true);
-    })
-
-    it("Emits the correct event", async () => {
-      await expect(whitelistableExMock.setWhitelistEnabled(true))
-        .to.emit(whitelistableExMock, "WhitelistEnabled")
-        .withArgs(true);
-    });
-  });
 
   describe("Function 'updateWhitelister()'", async () => {
     beforeEach(async () => {

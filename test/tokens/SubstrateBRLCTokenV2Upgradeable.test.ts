@@ -1,0 +1,129 @@
+import { ethers, upgrades } from "hardhat";
+import { expect } from "chai";
+import { ContractFactory, Contract } from "ethers";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
+import { TransactionResponse } from "@ethersproject/abstract-provider";
+
+describe("Contract 'SubstrateBRLCTokenV2Upgradeable'", async () => {
+  const TOKEN_CONTRACT_NAME = "BRL Coin";
+  const TOKEN_SYMBOL = "BRLC";
+  const TOKEN_DECIMALS = 6;
+
+  const REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED = 'Initializable: contract is already initialized';
+  const REVERT_MESSAGE_IF_CALLER_IS_NOT_OWNER = "Ownable: caller is not the owner";
+  const REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED = "Pausable: paused";
+  const REVERT_MESSAGE_IF_CALLER_IS_NOT_MASTER_MINTER = "MintAndBurn: caller is not the masterMinter";
+  const REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED = 'Blacklistable: account is blacklisted';
+
+  let brlcToken: Contract;
+  let deployer: SignerWithAddress;
+  let user1: SignerWithAddress;
+  let user2: SignerWithAddress;
+
+  beforeEach(async () => {
+    // Deploy the contract under test
+    const BrlcToken: ContractFactory = await ethers.getContractFactory("SubstrateBRLCTokenV2Upgradeable");
+    brlcToken = await upgrades.deployProxy(BrlcToken, [TOKEN_CONTRACT_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS]);
+    await brlcToken.deployed();
+
+    // Get user accounts
+    [deployer, user1, user2] = await ethers.getSigners();
+
+    //Configure the base contract
+    const txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
+    await txResponse.wait();
+  })
+
+  it("The initialize function can't be called more than once", async () => {
+    await expect(brlcToken.initialize(TOKEN_CONTRACT_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS))
+      .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
+  })
+
+  describe("Function 'updateMasterMinter()'", async () => {
+    it("Is reverted if is called not by the owner", async () => {
+      await expect(brlcToken.connect(user1).updateMasterMinter(deployer.address))
+        .to.be.revertedWith(REVERT_MESSAGE_IF_CALLER_IS_NOT_OWNER);
+    });
+
+    it("Executes successfully if is called by the owner", async () => {
+      const txResponse: TransactionResponse = await brlcToken.updateMasterMinter(user1.address);
+      await txResponse.wait();
+      expect(await brlcToken.masterMinter()).to.equal(user1.address);
+    })
+
+    it("Emits the correct event", async () => {
+      await expect(brlcToken.updateMasterMinter(user1.address))
+        .to.emit(brlcToken, "MasterMinterChanged")
+        .withArgs(user1.address);
+    });
+  });
+
+  describe("Function 'configureMinter()'", async () => {
+    const mintAllowance: number = 123;
+
+    beforeEach(async () => {
+      const txResponse: TransactionResponse = await brlcToken.updateMasterMinter(user1.address);
+      await txResponse.wait();
+    })
+
+    it("Is reverted if the contract is paused", async () => {
+      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
+      await txResponse.wait();
+      txResponse = await brlcToken.pause();
+      await txResponse.wait();
+      await expect(brlcToken.configureMinter(user1.address, mintAllowance))
+        .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
+    });
+
+    it("Is reverted if is called not by the master minter", async () => {
+      await expect(brlcToken.configureMinter(user1.address, mintAllowance))
+        .to.be.revertedWith(REVERT_MESSAGE_IF_CALLER_IS_NOT_MASTER_MINTER);
+    });
+
+    it("Executes successfully if is called by the master minter", async () => {
+      const txResponse: TransactionResponse =
+        await brlcToken.connect(user1).configureMinter(user2.address, mintAllowance);
+      await txResponse.wait();
+      expect(await brlcToken.isMinter(user2.address)).to.equal(true);
+      expect(await brlcToken.minterAllowance(user2.address)).to.equal(mintAllowance);
+    })
+
+    it("Emits the correct event", async () => {
+      await expect(await brlcToken.connect(user1).configureMinter(user2.address, mintAllowance))
+        .to.emit(brlcToken, "MinterConfigured")
+        .withArgs(user2.address, mintAllowance);
+    });
+  });
+
+  describe("Function 'removeMinter()'", async () => {
+    const mintAllowance: number = 123;
+
+    beforeEach(async () => {
+      let txResponse: TransactionResponse = await brlcToken.updateMasterMinter(user1.address);
+      await txResponse.wait();
+      txResponse = await brlcToken.connect(user1).configureMinter(user2.address, mintAllowance);
+      await txResponse.wait();
+    })
+
+    it("Is reverted if is called not by the master minter", async () => {
+      await expect(brlcToken.removeMinter(user2.address))
+        .to.be.revertedWith(REVERT_MESSAGE_IF_CALLER_IS_NOT_MASTER_MINTER);
+    });
+
+    it("Executes successfully if is called by the master minter", async () => {
+      expect(await brlcToken.isMinter(user2.address)).to.equal(true);
+      expect(await brlcToken.minterAllowance(user2.address)).to.equal(mintAllowance);
+      const txResponse: TransactionResponse =
+        await brlcToken.connect(user1).removeMinter(user2.address);
+      await txResponse.wait();
+      expect(await brlcToken.isMinter(user2.address)).to.equal(false);
+      expect(await brlcToken.minterAllowance(user2.address)).to.equal(0);
+    })
+
+    it("Emits the correct event", async () => {
+      await expect(await brlcToken.connect(user1).removeMinter(user2.address))
+        .to.emit(brlcToken, "MinterRemoved")
+        .withArgs(user2.address);
+    });
+  });
+});

@@ -38,8 +38,8 @@ describe("Contract 'RandomableUpgradeable'", async () => {
 
     it("Executes successfully if is called by the owner", async () => {
       const expectedRandomProviderAddress: string = user.address;
-      const tx_response: TransactionResponse = await randomableMock.setRandomProvider(expectedRandomProviderAddress);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await randomableMock.setRandomProvider(expectedRandomProviderAddress);
+      await txResponse.wait();
       const actualRandomProviderAddress: string = await randomableMock.getRandomProvider();
       expect(actualRandomProviderAddress).to.equal(expectedRandomProviderAddress);
     })
@@ -61,14 +61,14 @@ describe("Contract 'RandomableUpgradeable'", async () => {
       randomProviderMock = await RandomProviderMock.deploy();
       await randomProviderMock.deployed();
 
-      const tx_response: TransactionResponse = await randomableMock.setRandomProvider(randomProviderMock.address);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await randomableMock.setRandomProvider(randomProviderMock.address);
+      await txResponse.wait();
     });
 
     it("Returns the value from the random provider", async () => {
       const expectedRandomValue: number = 123;
-      const tx_response: TransactionResponse = await randomProviderMock.setRandomNumber(expectedRandomValue);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await randomProviderMock.setRandomNumber(expectedRandomValue);
+      await txResponse.wait();
       const actualRandomValue: number = await randomableMock.getRandomness();
       expect(actualRandomValue).to.equal(expectedRandomValue);
     });

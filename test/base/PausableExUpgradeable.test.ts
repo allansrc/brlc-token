@@ -43,8 +43,8 @@ describe("Contract 'PausableExUpgradeable'", async () => {
 
     it("Executes successfully if is called by the owner", async () => {
       const expectedPauserAddress: string = user.address;
-      const tx_response: TransactionResponse = await pausableExMock.setPauser(expectedPauserAddress);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pausableExMock.setPauser(expectedPauserAddress);
+      await txResponse.wait();
       const actualPauserAddress: string = await pausableExMock.getPauser();
       expect(actualPauserAddress).to.equal(expectedPauserAddress);
     })
@@ -59,8 +59,8 @@ describe("Contract 'PausableExUpgradeable'", async () => {
 
   describe("Function 'pause()'", async () => {
     beforeEach(async () => {
-      const tx_response: TransactionResponse = await pausableExMock.setPauser(user.address);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pausableExMock.setPauser(user.address);
+      await txResponse.wait();
     })
 
     it("Is reverted if is called not by the pauser", async () => {
@@ -69,8 +69,8 @@ describe("Contract 'PausableExUpgradeable'", async () => {
     });
 
     it("Executes successfully if is called by the pauser", async () => {
-      const tx_response: TransactionResponse = await pausableExMock.connect(user).pause();
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pausableExMock.connect(user).pause();
+      await txResponse.wait();
       expect(await pausableExMock.paused()).to.equal(true);
     });
 
@@ -83,10 +83,10 @@ describe("Contract 'PausableExUpgradeable'", async () => {
 
   describe("Function 'unpause()'", async () => {
     beforeEach(async () => {
-      let tx_response: TransactionResponse = await pausableExMock.setPauser(user.address);
-      await tx_response.wait();
-      tx_response = await pausableExMock.connect(user).pause();
-      await tx_response.wait();
+      let txResponse: TransactionResponse = await pausableExMock.setPauser(user.address);
+      await txResponse.wait();
+      txResponse = await pausableExMock.connect(user).pause();
+      await txResponse.wait();
     })
 
     it("Is reverted if is called not by the pauser", async () => {
@@ -95,8 +95,8 @@ describe("Contract 'PausableExUpgradeable'", async () => {
     });
 
     it("Executes successfully if is called by the pauser", async () => {
-      const tx_response: TransactionResponse = await pausableExMock.connect(user).unpause();
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pausableExMock.connect(user).unpause();
+      await txResponse.wait();
       expect(await pausableExMock.paused()).to.equal(false);
     });
 

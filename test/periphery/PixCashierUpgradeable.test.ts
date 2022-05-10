@@ -48,12 +48,12 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
       cashierClient = deployer;
       await pixCashier.setPauser(deployer.address);
       await pixCashier.setWhitelistEnabled(true);
-      let tx_response: TransactionResponse = await pixCashier.setWhitelistAdmin(user.address);
-      await tx_response.wait();
-      tx_response = await pixCashier.connect(user).updateWhitelister(user.address, true);
-      await tx_response.wait();
-      tx_response = await pixCashier.connect(user).whitelist(user.address);
-      await tx_response.wait();
+      let txResponse: TransactionResponse = await pixCashier.setWhitelistAdmin(user.address);
+      await txResponse.wait();
+      txResponse = await pixCashier.connect(user).updateWhitelister(user.address, true);
+      await txResponse.wait();
+      txResponse = await pixCashier.connect(user).whitelist(user.address);
+      await txResponse.wait();
     })
 
     it("Is reverted if caller is not whitelisted", async () => {
@@ -62,8 +62,8 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
     })
 
     it("Is reverted if the contract is paused", async () => {
-      const tx_response: TransactionResponse = await pixCashier.pause();
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pixCashier.pause();
+      await txResponse.wait();
       await expect(pixCashier.connect(user).cashIn(cashierClient.address, tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
     })
@@ -75,9 +75,9 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
 
     it("Mints correct amount of tokens", async () => {
       await expect(async () => {
-        const tx_response: TransactionResponse =
+        const txResponse: TransactionResponse =
           await pixCashier.connect(user).cashIn(cashierClient.address, tokenAmount);
-        await tx_response.wait();
+        await txResponse.wait();
       }).to.changeTokenBalances(
         brlcMock,
         [cashierClient],
@@ -99,31 +99,31 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
     beforeEach(async () => {
       cashierClient = deployer;
       await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
-      const tx_response: TransactionResponse = await pixCashier.setPauser(deployer.address);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pixCashier.setPauser(deployer.address);
+      await txResponse.wait();
     })
 
     it("Is reverted if the contract is paused", async () => {
-      const tx_response: TransactionResponse = await pixCashier.pause();
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pixCashier.pause();
+      await txResponse.wait();
       await expect(pixCashier.connect(cashierClient).cashOut(tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
     })
 
     it("Is reverted if the user has not enough tokens", async () => {
-      const tx_response: TransactionResponse = await brlcMock.mint(cashierClient.address, tokenAmount - 1);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await brlcMock.mint(cashierClient.address, tokenAmount - 1);
+      await txResponse.wait();
       await expect(pixCashier.connect(cashierClient).cashOut(tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_TOKEN_TRANSFER_AMOUNT_EXCEEDS_BALANCE);
     });
 
     it("Transfers correct amount of tokens and changes cash-out balances accordingly", async () => {
-      const tx_response: TransactionResponse = await brlcMock.mint(cashierClient.address, tokenAmount);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await brlcMock.mint(cashierClient.address, tokenAmount);
+      await txResponse.wait();
       const cashOutBalanceBefore: number = await pixCashier.cashOutBalanceOf(cashierClient.address);
       await expect(async () => {
-        const tx_response: TransactionResponse = await pixCashier.connect(cashierClient).cashOut(tokenAmount);
-        await tx_response.wait();
+        const txResponse: TransactionResponse = await pixCashier.connect(cashierClient).cashOut(tokenAmount);
+        await txResponse.wait();
       }).to.changeTokenBalances(
         brlcMock,
         [cashierClient, pixCashier],
@@ -134,8 +134,8 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
     });
 
     it("Emits the correct event", async () => {
-      const tx_response: TransactionResponse = await brlcMock.mint(cashierClient.address, tokenAmount);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await brlcMock.mint(cashierClient.address, tokenAmount);
+      await txResponse.wait();
       await expect(pixCashier.connect(cashierClient).cashOut(tokenAmount))
         .to.emit(pixCashier, "CashOut")
         .withArgs(cashierClient.address, tokenAmount, tokenAmount);
@@ -150,31 +150,31 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
       cashierClient = deployer;
       await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
       await brlcMock.mint(cashierClient.address, tokenAmount);
-      const tx_response: TransactionResponse = await pixCashier.setPauser(deployer.address);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pixCashier.setPauser(deployer.address);
+      await txResponse.wait();
     })
 
     it("Is reverted if the contract is paused", async () => {
-      const tx_response: TransactionResponse = await pixCashier.pause();
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pixCashier.pause();
+      await txResponse.wait();
       await expect(pixCashier.connect(cashierClient).cashOutConfirm(tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
     })
 
     it("Is reverted if the user's cash-out balance has not enough tokens", async () => {
-      const tx_response: TransactionResponse = await pixCashier.connect(cashierClient).cashOut(tokenAmount - 1);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pixCashier.connect(cashierClient).cashOut(tokenAmount - 1);
+      await txResponse.wait();
       await expect(pixCashier.connect(cashierClient).cashOutConfirm(tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CASH_OUT_BALANCE_IS_NOT_ENOUGH_TO_CONFIRM);
     });
 
     it("Burns correct amount of tokens and changes cash-out balances accordingly", async () => {
-      const tx_response: TransactionResponse = await pixCashier.connect(cashierClient).cashOut(tokenAmount);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pixCashier.connect(cashierClient).cashOut(tokenAmount);
+      await txResponse.wait();
       const cashOutBalanceBefore: number = await pixCashier.cashOutBalanceOf(cashierClient.address);
       await expect(async () => {
-        const tx_response: TransactionResponse = await pixCashier.connect(cashierClient).cashOutConfirm(tokenAmount);
-        await tx_response.wait();
+        const txResponse: TransactionResponse = await pixCashier.connect(cashierClient).cashOutConfirm(tokenAmount);
+        await txResponse.wait();
       }).to.changeTokenBalances(
         brlcMock,
         [pixCashier],
@@ -185,8 +185,8 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
     });
 
     it("Emits the correct event", async () => {
-      const tx_response: TransactionResponse = await pixCashier.connect(cashierClient).cashOut(tokenAmount);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pixCashier.connect(cashierClient).cashOut(tokenAmount);
+      await txResponse.wait();
       await expect(pixCashier.connect(cashierClient).cashOutConfirm(tokenAmount))
         .to.emit(pixCashier, "CashOutConfirm")
         .withArgs(cashierClient.address, tokenAmount, 0);
@@ -201,31 +201,31 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
       cashierClient = deployer;
       await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
       await brlcMock.mint(cashierClient.address, tokenAmount);
-      const tx_response: TransactionResponse = await pixCashier.setPauser(deployer.address);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pixCashier.setPauser(deployer.address);
+      await txResponse.wait();
     })
 
     it("Is reverted if the contract is paused", async () => {
-      const tx_response: TransactionResponse = await pixCashier.pause();
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pixCashier.pause();
+      await txResponse.wait();
       await expect(pixCashier.connect(cashierClient).cashOutReverse(tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
     })
 
     it("Is reverted if the user's cash-out balance has not enough tokens", async () => {
-      const tx_response: TransactionResponse = await pixCashier.connect(cashierClient).cashOut(tokenAmount - 1);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pixCashier.connect(cashierClient).cashOut(tokenAmount - 1);
+      await txResponse.wait();
       await expect(pixCashier.connect(cashierClient).cashOutReverse(tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CASH_OUT_BALANCE_IS_NOT_ENOUGH_TO_REVERSE);
     });
 
     it("Transfers correct amount of tokens and changes cash-out balances accordingly", async () => {
-      const tx_response: TransactionResponse = await pixCashier.connect(cashierClient).cashOut(tokenAmount);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pixCashier.connect(cashierClient).cashOut(tokenAmount);
+      await txResponse.wait();
       const cashOutBalanceBefore: number = await pixCashier.cashOutBalanceOf(cashierClient.address);
       await expect(async () => {
-        const tx_response: TransactionResponse = await pixCashier.connect(cashierClient).cashOutReverse(tokenAmount);
-        await tx_response.wait();
+        const txResponse: TransactionResponse = await pixCashier.connect(cashierClient).cashOutReverse(tokenAmount);
+        await txResponse.wait();
       }).to.changeTokenBalances(
         brlcMock,
         [cashierClient, pixCashier],
@@ -236,8 +236,8 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
     });
 
     it("Emits the correct event", async () => {
-      const tx_response: TransactionResponse = await pixCashier.connect(cashierClient).cashOut(tokenAmount);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await pixCashier.connect(cashierClient).cashOut(tokenAmount);
+      await txResponse.wait();
       await expect(pixCashier.connect(cashierClient).cashOutReverse(tokenAmount))
         .to.emit(pixCashier, "CashOutReverse")
         .withArgs(cashierClient.address, tokenAmount, 0);
@@ -262,15 +262,15 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
     })
 
     it("Leads to correct balances when using several functions", async () => {
-      let tx_response: TransactionResponse =
+      let txResponse: TransactionResponse =
         await pixCashier.connect(user).cashIn(cashierClient.address, cashInTokenAmount);
-      await tx_response.wait();
-      tx_response = await pixCashier.connect(cashierClient).cashOut(cashOutTokenAmount);
-      await tx_response.wait();
-      tx_response = await pixCashier.connect(cashierClient).cashOutReverse(cashOutReverseTokenAmount);
-      await tx_response.wait();
-      tx_response = await pixCashier.connect(cashierClient).cashOutConfirm(cashOutConfirmTokenAmount);
-      await tx_response.wait();
+      await txResponse.wait();
+      txResponse = await pixCashier.connect(cashierClient).cashOut(cashOutTokenAmount);
+      await txResponse.wait();
+      txResponse = await pixCashier.connect(cashierClient).cashOutReverse(cashOutReverseTokenAmount);
+      await txResponse.wait();
+      txResponse = await pixCashier.connect(cashierClient).cashOutConfirm(cashOutConfirmTokenAmount);
+      await txResponse.wait();
       expect(await brlcMock.balanceOf(cashierClient.address)).to.equal(cashierClientFinalTokenBalance);
       expect(await pixCashier.cashOutBalanceOf(cashierClient.address)).to.equal(cashierClientFinalCashOutBalance);
       expect(await brlcMock.balanceOf(pixCashier.address)).to.equal(cashierClientFinalCashOutBalance);

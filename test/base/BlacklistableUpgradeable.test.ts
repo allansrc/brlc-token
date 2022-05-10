@@ -47,8 +47,8 @@ describe("Contract 'BlacklistableUpgradeable'", async () => {
 
     it("Executes successfully if is called by the owner", async () => {
       const expectedBlacklisterAddress: string = user1.address;
-      const tx_response: TransactionResponse = await blacklistableMock.setBlacklister(expectedBlacklisterAddress);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await blacklistableMock.setBlacklister(expectedBlacklisterAddress);
+      await txResponse.wait();
       const actualBlacklisterAddress: string = await blacklistableMock.getBlacklister();
       expect(actualBlacklisterAddress).to.equal(expectedBlacklisterAddress);
     })
@@ -63,8 +63,8 @@ describe("Contract 'BlacklistableUpgradeable'", async () => {
 
   describe("Function 'blacklist()'", async () => {
     beforeEach(async () => {
-      const tx_response: TransactionResponse = await blacklistableMock.setBlacklister(user1.address);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await blacklistableMock.setBlacklister(user1.address);
+      await txResponse.wait();
     })
 
     it("Is reverted if is called not by the blacklister", async () => {
@@ -74,8 +74,8 @@ describe("Contract 'BlacklistableUpgradeable'", async () => {
 
     it("Executes successfully if is called by the blacklister", async () => {
       expect(await blacklistableMock.isBlacklisted(user2.address)).to.equal(false);
-      const tx_response: TransactionResponse = await blacklistableMock.connect(user1).blacklist(user2.address);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await blacklistableMock.connect(user1).blacklist(user2.address);
+      await txResponse.wait();
       expect(await blacklistableMock.isBlacklisted(user2.address)).to.equal(true);
     });
 
@@ -88,10 +88,10 @@ describe("Contract 'BlacklistableUpgradeable'", async () => {
 
   describe("Function 'unBlacklist()'", async () => {
     beforeEach(async () => {
-      let tx_response: TransactionResponse = await blacklistableMock.setBlacklister(user1.address);
-      await tx_response.wait();
-      tx_response = await blacklistableMock.connect(user1).blacklist(user2.address);
-      await tx_response.wait();
+      let txResponse: TransactionResponse = await blacklistableMock.setBlacklister(user1.address);
+      await txResponse.wait();
+      txResponse = await blacklistableMock.connect(user1).blacklist(user2.address);
+      await txResponse.wait();
     })
 
     it("Is reverted if is called not by the blacklister", async () => {
@@ -101,8 +101,8 @@ describe("Contract 'BlacklistableUpgradeable'", async () => {
 
     it("Executes successfully if is called by the blacklister", async () => {
       expect(await blacklistableMock.isBlacklisted(user2.address)).to.equal(true);
-      const tx_response: TransactionResponse = await blacklistableMock.connect(user1).unBlacklist(user2.address);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await blacklistableMock.connect(user1).unBlacklist(user2.address);
+      await txResponse.wait();
       expect(await blacklistableMock.isBlacklisted(user2.address)).to.equal(false);
     });
 
@@ -116,15 +116,15 @@ describe("Contract 'BlacklistableUpgradeable'", async () => {
   describe("Function 'selfBlacklist()'", async () => {
     it("Executes successfully if is called by the owner", async () => {
       expect(await blacklistableMock.isBlacklisted(deployer.address)).to.equal(false);
-      const tx_response: TransactionResponse = await blacklistableMock.selfBlacklist();
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await blacklistableMock.selfBlacklist();
+      await txResponse.wait();
       expect(await blacklistableMock.isBlacklisted(deployer.address)).to.equal(true);
     });
 
     it("Executes successfully if is called by any account", async () => {
       expect(await blacklistableMock.isBlacklisted(user1.address)).to.equal(false);
-      const tx_response: TransactionResponse = await blacklistableMock.connect(user1).selfBlacklist();
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await blacklistableMock.connect(user1).selfBlacklist();
+      await txResponse.wait();
       expect(await blacklistableMock.isBlacklisted(user1.address)).to.equal(true);
     });
 
@@ -141,13 +141,13 @@ describe("Contract 'BlacklistableUpgradeable'", async () => {
 
   describe("Modifier 'notBlacklisted'", async () => {
     beforeEach(async () => {
-      const tx_response: TransactionResponse = await blacklistableMock.setBlacklister(user1.address);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await blacklistableMock.setBlacklister(user1.address);
+      await txResponse.wait();
     })
 
     it("Reverts the target function if the caller is blacklisted", async () => {
-      const tx_response: TransactionResponse = await blacklistableMock.connect(user1).blacklist(deployer.address);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await blacklistableMock.connect(user1).blacklist(deployer.address);
+      await txResponse.wait();
       await expect(blacklistableMock.testNotBlacklistedModifier())
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });

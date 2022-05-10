@@ -20,14 +20,14 @@ describe("Contract 'OnhainRandomProvider'", async () => {
     const randomNumber1: BigNumber = await onchainRandomProvider.getRandomness();
 
     // Wait for the next block
-    let tx_response: TransactionResponse = await deployer.sendTransaction({ to: user.address, value: 100 });
-    await tx_response.wait();
+    let txResponse: TransactionResponse = await deployer.sendTransaction({ to: user.address, value: 100 });
+    await txResponse.wait();
 
     const randomNumber2: BigNumber = await onchainRandomProvider.getRandomness();
 
     // Wait for the next block
-    tx_response = await deployer.sendTransaction({ to: user.address, value: 100 });
-    await tx_response.wait();
+    txResponse = await deployer.sendTransaction({ to: user.address, value: 100 });
+    await txResponse.wait();
 
     const randomNumber3: BigNumber = await onchainRandomProvider.getRandomness();
 

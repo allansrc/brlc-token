@@ -48,16 +48,16 @@ describe("Contract 'FaucetCallerUpgradeable'", async () => {
 
     it("Executes successfully if is called by the owner with a correct non-zero faucet address", async () => {
       const expectedFaucetAddress: string = faucetMock.address;
-      const tx_response: TransactionResponse = await faucetCallerMock.setFaucet(expectedFaucetAddress);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await faucetCallerMock.setFaucet(expectedFaucetAddress);
+      await txResponse.wait();
       const actualFaucetAddress: string = await faucetCallerMock.getFaucet();
       expect(actualFaucetAddress).to.equal(expectedFaucetAddress);
     })
 
     it("Executes successfully if is called by the owner with zero faucet address", async () => {
       const expectedFaucetAddress: string = ethers.constants.AddressZero;
-      const tx_response: TransactionResponse = await faucetCallerMock.setFaucet(expectedFaucetAddress);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await faucetCallerMock.setFaucet(expectedFaucetAddress);
+      await txResponse.wait();
       const actualFaucetAddress: string = await faucetCallerMock.getFaucet();
       expect(actualFaucetAddress).to.equal(expectedFaucetAddress);
     })
@@ -80,17 +80,17 @@ describe("Contract 'FaucetCallerUpgradeable'", async () => {
   describe("Function 'faucetRequest()'", async () => {
     it("Does not call the 'withdraw()' function of the faucet if the faucet address is zero", async () => {
       expect(await faucetCallerMock.getFaucet()).to.equal(ethers.constants.AddressZero);
-      const tx_response = await faucetCallerMock.faucetRequest(user.address);
-      await tx_response.wait();
+      const txResponse = await faucetCallerMock.faucetRequest(user.address);
+      await txResponse.wait();
       expect(await faucetMock.lastWithdrawAddress()).to.equal(ethers.constants.AddressZero);
     });
 
     it("Calls the 'withdraw()' function of the faucet if the faucet address is non-zero", async () => {
-      let tx_response: TransactionResponse = await faucetCallerMock.setFaucet(faucetMock.address);
-      await tx_response.wait();
+      let txResponse: TransactionResponse = await faucetCallerMock.setFaucet(faucetMock.address);
+      await txResponse.wait();
       expect(await faucetCallerMock.getFaucet()).to.equal(faucetMock.address);
-      tx_response = await faucetCallerMock.faucetRequest(user.address);
-      await tx_response.wait();
+      txResponse = await faucetCallerMock.faucetRequest(user.address);
+      await txResponse.wait();
       expect(await faucetMock.lastWithdrawAddress()).to.equal(user.address);
     });
   });

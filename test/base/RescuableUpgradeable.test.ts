@@ -39,8 +39,8 @@ describe("Contract 'RescuableUpgradeable'", async () => {
 
     it("Executes successfully if is called by the owner", async () => {
       const expectedRescuerAddress: string = user.address;
-      const tx_response: TransactionResponse = await rescuableMock.setRescuer(expectedRescuerAddress);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await rescuableMock.setRescuer(expectedRescuerAddress);
+      await txResponse.wait();
       const actualRescuerAddress: string = await rescuableMock.getRescuer();
       expect(actualRescuerAddress).to.equal(expectedRescuerAddress);
     })
@@ -61,8 +61,8 @@ describe("Contract 'RescuableUpgradeable'", async () => {
       brlcMock = await BRLCMock.deploy("BRL Coin", "BRLC", 6);
       await brlcMock.deployed();
       await brlcMock.mint(rescuableMock.address, tokenBalance);
-      const tx_response: TransactionResponse = await rescuableMock.setRescuer(user.address);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await rescuableMock.setRescuer(user.address);
+      await txResponse.wait();
     })
 
     it("Is reverted if is called not by the rescuer", async () => {
@@ -72,9 +72,9 @@ describe("Contract 'RescuableUpgradeable'", async () => {
 
     it("Transfers the correct amount of tokens", async () => {
       await expect(async () => {
-        const tx_response: TransactionResponse =
+        const txResponse: TransactionResponse =
           await rescuableMock.connect(user).rescueERC20(brlcMock.address, deployer.address, tokenBalance);
-        await tx_response.wait();
+        await txResponse.wait();
       }).to.changeTokenBalances(
         brlcMock,
         [rescuableMock, deployer],

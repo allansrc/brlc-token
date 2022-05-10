@@ -33,8 +33,8 @@ describe("Contract 'WhitelistableExUpgradeable'", async () => {
 
   describe("Function 'updateWhitelister()'", async () => {
     beforeEach(async () => {
-      const tx_response: TransactionResponse = await whitelistableExMock.setWhitelistAdmin(user1.address);
-      await tx_response.wait();
+      const txResponse: TransactionResponse = await whitelistableExMock.setWhitelistAdmin(user1.address);
+      await txResponse.wait();
     });
 
     it("Is reverted if is called not by the whitelist admin", async () => {
@@ -47,14 +47,14 @@ describe("Contract 'WhitelistableExUpgradeable'", async () => {
       expect(await whitelistableExMock.isWhitelister(user2.address)).to.equal(false);
 
       await whitelistableExMock.connect(user1).updateWhitelister(deployer.address, true);
-      let tx_response: TransactionResponse =
+      let txResponse: TransactionResponse =
         await whitelistableExMock.connect(user1).updateWhitelister(user2.address, true);
-      await tx_response.wait();
+      await txResponse.wait();
       expect(await whitelistableExMock.isWhitelister(deployer.address)).to.equal(true);
       expect(await whitelistableExMock.isWhitelister(user2.address)).to.equal(true);
 
-      tx_response = await whitelistableExMock.connect(user1).updateWhitelister(user2.address, false);
-      await tx_response.wait();
+      txResponse = await whitelistableExMock.connect(user1).updateWhitelister(user2.address, false);
+      await txResponse.wait();
       expect(await whitelistableExMock.isWhitelister(user2.address)).to.equal(false);
     })
 

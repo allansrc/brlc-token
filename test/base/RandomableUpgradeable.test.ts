@@ -10,14 +10,14 @@ describe("Contract 'RandomableUpgradeable'", async () => {
 
   let randomableMock: Contract;
   let deployer: SignerWithAddress;
-  let user: SignerWithAddress;
+  let pseudoRandomProvider: SignerWithAddress;
 
   beforeEach(async () => {
     const RandomableMock: ContractFactory = await ethers.getContractFactory("RandomableUpgradeableMock");
     randomableMock = await upgrades.deployProxy(RandomableMock);
     await randomableMock.deployed();
 
-    [deployer, user] = await ethers.getSigners();
+    [deployer, pseudoRandomProvider] = await ethers.getSigners();
   });
 
   it("The initialize function can't be called more than once", async () => {
@@ -32,12 +32,12 @@ describe("Contract 'RandomableUpgradeable'", async () => {
 
   describe("Function 'setRandomProvider()'", async () => {
     it("Is reverted if is called not by the owner", async () => {
-      await expect(randomableMock.connect(user).setRandomProvider(user.address))
+      await expect(randomableMock.connect(pseudoRandomProvider).setRandomProvider(pseudoRandomProvider.address))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CALLER_IS_NOT_OWNER);
     });
 
     it("Executes successfully if is called by the owner", async () => {
-      const expectedRandomProviderAddress: string = user.address;
+      const expectedRandomProviderAddress: string = pseudoRandomProvider.address;
       const txResponse: TransactionResponse = await randomableMock.setRandomProvider(expectedRandomProviderAddress);
       await txResponse.wait();
       const actualRandomProviderAddress: string = await randomableMock.getRandomProvider();
@@ -45,7 +45,7 @@ describe("Contract 'RandomableUpgradeable'", async () => {
     });
 
     it("Emits the correct event", async () => {
-      const randomProviderAddress: string = user.address;
+      const randomProviderAddress: string = pseudoRandomProvider.address;
       await expect(randomableMock.setRandomProvider(randomProviderAddress))
         .to.emit(randomableMock, "RandomProviderChanged")
         .withArgs(randomProviderAddress);
@@ -56,7 +56,7 @@ describe("Contract 'RandomableUpgradeable'", async () => {
     let randomProviderMock: Contract;
 
     beforeEach(async () => {
-      //Deploy an out of chain RandomProvider
+      //Deploy a mock random provider
       const RandomProviderMock: ContractFactory = await ethers.getContractFactory("RandomProviderMock");
       randomProviderMock = await RandomProviderMock.deploy();
       await randomProviderMock.deployed();

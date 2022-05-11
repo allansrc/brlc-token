@@ -13,6 +13,7 @@ describe("Contract 'OnhainRandomProvider'", async () => {
     const OnchainRandomProvider: ContractFactory = await ethers.getContractFactory("OnchainRandomProvider");
     onchainRandomProvider = await OnchainRandomProvider.deploy();
     await onchainRandomProvider.deployed();
+
     [deployer, user] = await ethers.getSigners();
   });
 

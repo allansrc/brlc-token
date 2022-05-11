@@ -5,7 +5,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { TransactionResponse } from "@ethersproject/abstract-provider";
 
 describe("Contract 'BRLCTokenUpgradeable'", async () => {
-  const TOKEN_CONTRACT_NAME = "BRL Coin";
+  const TOKEN_NAME = "BRL Coin";
   const TOKEN_SYMBOL = "BRLC";
   const TOKEN_DECIMALS = 6;
 
@@ -22,7 +22,7 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
   beforeEach(async () => {
     // Deploy the contract under test
     const BrlcToken: ContractFactory = await ethers.getContractFactory("BRLCTokenUpgradeableMock");
-    brlcToken = await upgrades.deployProxy(BrlcToken, [TOKEN_CONTRACT_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS]);
+    brlcToken = await upgrades.deployProxy(BrlcToken, [TOKEN_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS]);
     await brlcToken.deployed();
 
     // Get user accounts
@@ -30,7 +30,7 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
   });
 
   it("The initialize function can't be called more than once", async () => {
-    await expect(brlcToken.initialize(TOKEN_CONTRACT_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS))
+    await expect(brlcToken.initialize(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS))
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
   });
 
@@ -45,7 +45,7 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     beforeEach(async () => {
       const txResponse: TransactionResponse = await brlcToken.mint(user1.address, tokenAmount);
       await txResponse.wait();
-    })
+    });
 
     it("Is reverted if the contract is paused", async () => {
       let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
@@ -163,7 +163,8 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
 
     it("Updates the token balances correctly", async () => {
       await expect(async () => {
-        const txResponse: TransactionResponse = await brlcToken.connect(user1).transferFrom(deployer.address, user2.address, tokenAmount);
+        const txResponse: TransactionResponse =
+          await brlcToken.connect(user1).transferFrom(deployer.address, user2.address, tokenAmount);
         await txResponse.wait();
       }).to.changeTokenBalances(
         brlcToken,
@@ -184,7 +185,8 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     const allowanceAddedValue: number = 456;
 
     beforeEach(async () => {
-      brlcToken.approve(user1.address, initialAllowance);
+      const txResponse: TransactionResponse = await brlcToken.approve(user1.address, initialAllowance);
+      await txResponse.wait();
     })
 
     it("Is reverted if the contract is paused", async () => {
@@ -230,7 +232,8 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     const allowanceSubtractedValue: number = 123;
 
     beforeEach(async () => {
-      brlcToken.approve(user1.address, initialAllowance);
+      const txResponse: TransactionResponse = await brlcToken.approve(user1.address, initialAllowance);
+      await txResponse.wait();
     })
 
     it("Is reverted if the contract is paused", async () => {

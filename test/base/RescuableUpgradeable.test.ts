@@ -56,14 +56,16 @@ describe("Contract 'RescuableUpgradeable'", async () => {
   describe("Function 'rescueERC20()'", async () => {
     const tokenBalance: number = 123;
     let brlcMock: Contract;
+
     beforeEach(async () => {
       const BRLCMock: ContractFactory = await ethers.getContractFactory("ERC20Mock");
       brlcMock = await BRLCMock.deploy("BRL Coin", "BRLC", 6);
       await brlcMock.deployed();
+
       await brlcMock.mint(rescuableMock.address, tokenBalance);
       const txResponse: TransactionResponse = await rescuableMock.setRescuer(user.address);
       await txResponse.wait();
-    })
+    });
 
     it("Is reverted if is called not by the rescuer", async () => {
       await expect(rescuableMock.rescueERC20(brlcMock.address, user.address, tokenBalance))

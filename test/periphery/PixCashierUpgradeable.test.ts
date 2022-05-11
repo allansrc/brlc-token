@@ -46,20 +46,14 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
 
     beforeEach(async () => {
       cashierClient = deployer;
-
-      await pixCashier.setWhitelistEnabled(true);
-      let txResponse: TransactionResponse = await pixCashier.setWhitelistAdmin(user.address);
-      await txResponse.wait();
-      txResponse = await pixCashier.connect(user).updateWhitelister(user.address, true);
-      await txResponse.wait();
-      txResponse = await pixCashier.connect(user).whitelist(user.address);
-      await txResponse.wait();
-    })
+    });
 
     it("Is reverted if caller is not whitelisted", async () => {
+      const txResponse: TransactionResponse = await pixCashier.setWhitelistEnabled(true);
+      await txResponse.wait();
       await expect(pixCashier.cashIn(user.address, tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_NOT_WHITELISTED);
-    })
+    });
 
     it("Is reverted if the contract is paused", async () => {
       let txResponse: TransactionResponse =  await pixCashier.setPauser(deployer.address);
@@ -68,12 +62,12 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
       await txResponse.wait();
       await expect(pixCashier.connect(user).cashIn(cashierClient.address, tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
-    })
+    });
 
     it("Is reverted if the account address is zero", async () => {
       await expect(pixCashier.connect(user).cashIn(ethers.constants.AddressZero, tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ADDRESS_IS_ZERO);
-    })
+    });
 
     it("Mints correct amount of tokens", async () => {
       await expect(async () => {
@@ -104,7 +98,7 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
       const txResponse: TransactionResponse =
         await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
       await txResponse.wait();
-    })
+    });
 
     it("Is reverted if the contract is paused", async () => {
       let txResponse: TransactionResponse =  await pixCashier.setPauser(deployer.address);
@@ -113,7 +107,7 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
       await txResponse.wait();
       await expect(pixCashier.connect(cashierClient).cashOut(tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
-    })
+    });
 
     it("Is reverted if the user has not enough tokens", async () => {
       const txResponse: TransactionResponse = await brlcMock.mint(cashierClient.address, tokenAmount - 1);
@@ -265,6 +259,7 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
 
     beforeEach(async () => {
       cashierClient = deployer;
+
       cashierClientFinalTokenBalance = cashInTokenAmount - cashOutTokenAmount + cashOutReverseTokenAmount;
       cashierClientFinalCashOutBalance = cashOutTokenAmount - cashOutReverseTokenAmount - cashOutConfirmTokenAmount;
       await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);

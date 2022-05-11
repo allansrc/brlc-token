@@ -10,15 +10,14 @@ describe("Contract 'WhitelistableExUpgradeable'", async () => {
 
   let whitelistableExMock: Contract;
   let deployer: SignerWithAddress;
-  let user1: SignerWithAddress;
-  let user2: SignerWithAddress;
+  let user: SignerWithAddress;
 
   beforeEach(async () => {
     const WhitelistableExMock: ContractFactory = await ethers.getContractFactory("WhitelistableExUpgradeableMock");
     whitelistableExMock = await upgrades.deployProxy(WhitelistableExMock);
     await whitelistableExMock.deployed();
 
-    [deployer, user1, user2] = await ethers.getSigners();
+    [deployer, user] = await ethers.getSigners();
   });
 
   it("The initialize function can't be called more than once", async () => {
@@ -33,7 +32,7 @@ describe("Contract 'WhitelistableExUpgradeable'", async () => {
 
   describe("Function 'updateWhitelister()'", async () => {
     beforeEach(async () => {
-      const txResponse: TransactionResponse = await whitelistableExMock.setWhitelistAdmin(user1.address);
+      const txResponse: TransactionResponse = await whitelistableExMock.setWhitelistAdmin(user.address);
       await txResponse.wait();
     });
 
@@ -44,24 +43,21 @@ describe("Contract 'WhitelistableExUpgradeable'", async () => {
 
     it("Executes successfully if is called by the whitelist admin", async () => {
       expect(await whitelistableExMock.isWhitelister(deployer.address)).to.equal(false);
-      expect(await whitelistableExMock.isWhitelister(user2.address)).to.equal(false);
 
-      await whitelistableExMock.connect(user1).updateWhitelister(deployer.address, true);
       let txResponse: TransactionResponse =
-        await whitelistableExMock.connect(user1).updateWhitelister(user2.address, true);
+        await whitelistableExMock.connect(user).updateWhitelister(deployer.address, true);
       await txResponse.wait();
       expect(await whitelistableExMock.isWhitelister(deployer.address)).to.equal(true);
-      expect(await whitelistableExMock.isWhitelister(user2.address)).to.equal(true);
 
-      txResponse = await whitelistableExMock.connect(user1).updateWhitelister(user2.address, false);
+      txResponse = await whitelistableExMock.connect(user).updateWhitelister(deployer.address, false);
       await txResponse.wait();
-      expect(await whitelistableExMock.isWhitelister(user2.address)).to.equal(false);
-    })
+      expect(await whitelistableExMock.isWhitelister(deployer.address)).to.equal(false);
+    });
 
     it("Emits the correct event", async () => {
-      await expect(whitelistableExMock.connect(user1).updateWhitelister(user2.address, true))
+      await expect(whitelistableExMock.connect(user).updateWhitelister(deployer.address, true))
         .to.emit(whitelistableExMock, "WhitelisterChanged")
-        .withArgs(user2.address, true);
+        .withArgs(deployer.address, true);
     });
   });
 });

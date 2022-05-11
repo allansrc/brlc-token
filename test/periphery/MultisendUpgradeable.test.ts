@@ -46,21 +46,15 @@ describe("Contract 'MultisendUpgradeable'", async () => {
     const balanceTotal: number = countNumberArrayTotal(balances);
 
     beforeEach(async () => {
-      await multisend.setWhitelistEnabled(true);
-      let txResponse: TransactionResponse = await multisend.setWhitelistAdmin(user.address);
-      await txResponse.wait();
-      txResponse = await multisend.connect(user).updateWhitelister(user.address, true);
-      await txResponse.wait();
-      txResponse = await multisend.connect(user).whitelist(user.address);
-      await txResponse.wait();
-
       recipientAddresses = [deployer.address, user.address];
     });
 
     it("Is reverted if caller is not whitelisted", async () => {
+      const txResponse: TransactionResponse = await multisend.setWhitelistEnabled(true);
+      await txResponse.wait();
       await expect(multisend.multisendToken(brlcMock.address, recipientAddresses, balances))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_NOT_WHITELISTED);
-    })
+    });
 
     it("Is reverted if the contract is paused", async () => {
       let txResponse: TransactionResponse = await multisend.setPauser(deployer.address);
@@ -69,22 +63,22 @@ describe("Contract 'MultisendUpgradeable'", async () => {
       await txResponse.wait();
       await expect(multisend.connect(user).multisendToken(brlcMock.address, recipientAddresses, balances))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
-    })
+    });
 
     it("Is reverted if the token address is zero", async () => {
       await expect(multisend.connect(user).multisendToken(ethers.constants.AddressZero, recipientAddresses, balances))
         .to.be.revertedWith(REVERT_MESSAGE_IF_TOKEN_IS_ZERO_ADDRESS);
-    })
+    });
 
     it("Is reverted if the recipients array length is zero", async () => {
       await expect(multisend.connect(user).multisendToken(brlcMock.address, [], balances))
         .to.be.revertedWith(REVERT_MESSAGE_IF_RECIPIENTS_IS_AN_EMPTY_ARRAY);
-    })
+    });
 
     it("Is reverted if the recipients array differs in length from the balances array", async () => {
       await expect(multisend.connect(user).multisendToken(brlcMock.address, recipientAddresses, [10]))
         .to.be.revertedWith(REVERT_MESSAGE_IF_LENGTHS_OF_TWO_ARRAYS_DO_NOT_EQUAL);
-    })
+    });
 
     it("Is reverted if the contract has not enough tokens to execute all transfers", async () => {
       await brlcMock.mint(multisend.address, balanceTotal - balances[0]);

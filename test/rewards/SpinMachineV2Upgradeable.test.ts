@@ -11,8 +11,8 @@ describe("Contract 'SpinMachineV2Upgradeable'", async () => {
 
   beforeEach(async () => {
     // Deploy BRLC
-    const BRLCMock: ContractFactory = await ethers.getContractFactory("ERC20Mock");
-    brlcMock = await BRLCMock.deploy("BRL Coin", "BRLC", 6);
+    const BrlcMock: ContractFactory = await ethers.getContractFactory("ERC20Mock");
+    brlcMock = await BrlcMock.deploy("BRL Coin", "BRLC", 6);
     await brlcMock.deployed();
 
     // Deploy RandomProvider

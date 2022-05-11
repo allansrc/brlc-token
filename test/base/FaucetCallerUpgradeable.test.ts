@@ -60,9 +60,9 @@ describe("Contract 'FaucetCallerUpgradeable'", async () => {
       await txResponse.wait();
       const actualFaucetAddress: string = await faucetCallerMock.getFaucet();
       expect(actualFaucetAddress).to.equal(expectedFaucetAddress);
-    })
+    });
 
-    it("Emits the correct event if the faucet address is not-zero", async () => {
+    it("Emits the correct event if the faucet address is non-zero", async () => {
       const faucetAddress: string = faucetMock.address;
       await expect(faucetCallerMock.setFaucet(faucetAddress))
         .to.emit(faucetCallerMock, "FaucetChanged")

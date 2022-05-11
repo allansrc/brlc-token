@@ -23,8 +23,8 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
   beforeEach(async () => {
     // Deploy BRLC
-    const BRLCMock: ContractFactory = await ethers.getContractFactory("ERC20Mock");
-    brlcMock = await BRLCMock.deploy("BRL Coin", "BRLC", 6);
+    const BrlcMock: ContractFactory = await ethers.getContractFactory("ERC20Mock");
+    brlcMock = await BrlcMock.deploy("BRL Coin", "BRLC", 6);
     await brlcMock.deployed();
 
     // Deploy RandomProvider
@@ -363,7 +363,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
           );
         });
 
-        it("Spends the free spin and update the delay period", async () => {
+        it("Spends the free spin and update the delay period correctly", async () => {
           const oldLastFreeSpin: BigNumber = await spinMachine.lastFreeSpin(user1.address);
           const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
           const txReceipt: TransactionReceipt = await txResponse.wait();

@@ -21,10 +21,6 @@ describe("Contract 'PausableExUpgradeable'", async () => {
     [deployer, user] = await ethers.getSigners();
   });
 
-  it("Contains functions inherited from the 'PausableUpgradeable' contract", () => {
-    expect(pausableExMock.functions['paused()']).to.exist
-  });
-
   it("The initialize function can't be called more than once", async () => {
     await expect(pausableExMock.initialize())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
@@ -87,7 +83,7 @@ describe("Contract 'PausableExUpgradeable'", async () => {
       await txResponse.wait();
       txResponse = await pausableExMock.connect(user).pause();
       await txResponse.wait();
-    })
+    });
 
     it("Is reverted if is called not by the pauser", async () => {
       await expect(pausableExMock.unpause())

@@ -5,7 +5,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { TransactionResponse } from "@ethersproject/abstract-provider";
 
 describe("Contract 'SubstrateBRLCTokenV2Upgradeable'", async () => {
-  const TOKEN_CONTRACT_NAME = "BRL Coin";
+  const TOKEN_NAME = "BRL Coin";
   const TOKEN_SYMBOL = "BRLC";
   const TOKEN_DECIMALS = 6;
 
@@ -29,7 +29,7 @@ describe("Contract 'SubstrateBRLCTokenV2Upgradeable'", async () => {
   beforeEach(async () => {
     // Deploy the contract under test
     const BrlcToken: ContractFactory = await ethers.getContractFactory("SubstrateBRLCTokenV2Upgradeable");
-    brlcToken = await upgrades.deployProxy(BrlcToken, [TOKEN_CONTRACT_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS]);
+    brlcToken = await upgrades.deployProxy(BrlcToken, [TOKEN_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS]);
     await brlcToken.deployed();
 
     // Get user accounts
@@ -37,7 +37,7 @@ describe("Contract 'SubstrateBRLCTokenV2Upgradeable'", async () => {
   });
 
   it("The initialize function can't be called more than once", async () => {
-    await expect(brlcToken.initialize(TOKEN_CONTRACT_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS))
+    await expect(brlcToken.initialize(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS))
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
   });
 

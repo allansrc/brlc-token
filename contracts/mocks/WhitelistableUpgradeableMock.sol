@@ -31,8 +31,7 @@ contract WhitelistableUpgradeableMock is WhitelistableUpgradeable {
         _isWhitelistEnabled = enabled;
     }
 
-    function testOnlyWhitelistedModifier() external onlyWhitelisted(_msgSender()) view returns (bool){
-        return true;
+    function testOnlyWhitelistedModifier() external onlyWhitelisted(_msgSender()) {
     }
 
     function isWhitelister(address account) public override view returns (bool) {
@@ -43,7 +42,6 @@ contract WhitelistableUpgradeableMock is WhitelistableUpgradeable {
         _stubWhitelister = account;
     }
 
-    function testOnlyWhitelistAdminModifier() external onlyWhitelistAdmin view returns (bool){
-        return true;
+    function testOnlyWhitelistAdminModifier() external onlyWhitelistAdmin {
     }
 }

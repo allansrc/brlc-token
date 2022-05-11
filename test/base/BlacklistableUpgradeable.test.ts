@@ -148,7 +148,8 @@ describe("Contract 'BlacklistableUpgradeable'", async () => {
     });
 
     it("Does not revert the target function if the caller is not blacklisted", async () => {
-      expect(await blacklistableMock.connect(user2).testNotBlacklistedModifier()).to.equal(true);
+      await expect(blacklistableMock.connect(user2).testNotBlacklistedModifier())
+        .to.be.not.reverted;
     });
   });
 });

@@ -64,7 +64,7 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
     it("Does not revert the target function if the caller is the whitelist admin", async () => {
       const txResponse: TransactionResponse = await whitelistableMock.setWhitelistAdmin(user.address);
       await txResponse.wait();
-      expect(await whitelistableMock.connect(user).testOnlyWhitelistAdminModifier()).to.equal(true);
+      await expect(whitelistableMock.connect(user).testOnlyWhitelistAdminModifier()).to.be.not.reverted;
     });
   });
 
@@ -139,8 +139,9 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
 
   describe("Modifier 'onlyWhitelisted'", async () => {
     beforeEach(async () => {
-      await whitelistableMock.setWhitelistEnabled(true);
-      const txResponse: TransactionResponse = await whitelistableMock.setStubWhitelister(user.address);
+      let txResponse: TransactionResponse = await whitelistableMock.setWhitelistEnabled(true);
+      await txResponse.wait();
+      txResponse = await whitelistableMock.setStubWhitelister(user.address);
       await txResponse.wait();
     })
 
@@ -152,14 +153,15 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
     it("Does not revert the target function if the caller is whitelisted", async () => {
       const txResponse: TransactionResponse = await whitelistableMock.connect(user).whitelist(deployer.address);
       await txResponse.wait();
-      expect(await whitelistableMock.testOnlyWhitelistedModifier()).to.equal(true);
+      await expect(whitelistableMock.testOnlyWhitelistedModifier()).to.be.not.reverted;
     });
 
     it("Does not revert the target function if the whitelist is disabled", async () => {
-      await whitelistableMock.connect(user).unWhitelist(deployer.address);
-      const txResponse: TransactionResponse = await whitelistableMock.setWhitelistEnabled(false);
+      let txResponse: TransactionResponse = await whitelistableMock.connect(user).unWhitelist(deployer.address);
       await txResponse.wait();
-      expect(await whitelistableMock.testOnlyWhitelistedModifier()).to.equal(true);
+      txResponse = await whitelistableMock.setWhitelistEnabled(false);
+      await txResponse.wait();
+      await expect(whitelistableMock.testOnlyWhitelistedModifier()).to.be.not.reverted;
     });
   });
 });

@@ -20,7 +20,6 @@ contract BlacklistableUpgradeableMock is BlacklistableUpgradeable {
         __Blacklistable_init_unchained();
     }
 
-    function testNotBlacklistedModifier() external notBlacklisted(_msgSender()) view returns (bool){
-        return true;
+    function testNotBlacklistedModifier() external notBlacklisted(_msgSender()) {
     }
 }

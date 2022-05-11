@@ -27,10 +27,6 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
 
     // Get user accounts
     [deployer, user1, user2] = await ethers.getSigners();
-
-    //Configure the base contract
-    const txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
-    await txResponse.wait();
   })
 
   it("The initialize function can't be called more than once", async () => {
@@ -52,7 +48,9 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     })
 
     it("Is reverted if the contract is paused", async () => {
-      const txResponse: TransactionResponse = await brlcToken.pause();
+      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
+      await txResponse.wait();
+      txResponse = await brlcToken.pause();
       await txResponse.wait();
       await expect(brlcToken.connect(user1).transfer(user2.address, tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
@@ -72,7 +70,7 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });
 
-    it("Updates the balances correctly", async () => {
+    it("Updates the token balances correctly", async () => {
       await expect(async () => {
         const txResponse: TransactionResponse = await brlcToken.connect(user1).transfer(user2.address, tokenAmount);
         await txResponse.wait();
@@ -94,7 +92,9 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     const allowance: number = 123;
 
     it("Is reverted if the contract is paused", async () => {
-      const txResponse: TransactionResponse = await brlcToken.pause();
+      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
+      await txResponse.wait();
+      txResponse = await brlcToken.pause();
       await txResponse.wait();
       await expect(brlcToken.approve(user1.address, allowance))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
@@ -139,7 +139,9 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     })
 
     it("Is reverted if the contract is paused", async () => {
-      const txResponse: TransactionResponse = await brlcToken.pause();
+      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
+      await txResponse.wait();
+      txResponse = await brlcToken.pause();
       await txResponse.wait();
       await expect(brlcToken.connect(user1).transferFrom(deployer.address, user2.address, tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
@@ -159,7 +161,7 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });
 
-    it("Updates the balances correctly", async () => {
+    it("Updates the token balances correctly", async () => {
       await expect(async () => {
         const txResponse: TransactionResponse = await brlcToken.connect(user1).transferFrom(deployer.address, user2.address, tokenAmount);
         await txResponse.wait();
@@ -186,7 +188,9 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     })
 
     it("Is reverted if the contract is paused", async () => {
-      const txResponse: TransactionResponse = await brlcToken.pause();
+      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
+      await txResponse.wait();
+      txResponse = await brlcToken.pause();
       await txResponse.wait();
       await expect(brlcToken.increaseAllowance(user1.address, allowanceAddedValue))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
@@ -230,7 +234,9 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     })
 
     it("Is reverted if the contract is paused", async () => {
-      const txResponse: TransactionResponse = await brlcToken.pause();
+      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
+      await txResponse.wait();
+      txResponse = await brlcToken.pause();
       await txResponse.wait();
       await expect(brlcToken.decreaseAllowance(user1.address, allowanceSubtractedValue))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
@@ -270,7 +276,9 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     const tokenAmount: number = 123;
 
     it("Is reverted if the contract is paused", async () => {
-      const txResponse: TransactionResponse = await brlcToken.pause();
+      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
+      await txResponse.wait();
+      txResponse = await brlcToken.pause();
       await txResponse.wait();
       await expect(brlcToken.testBeforeTokenTransfer(user1.address, user2.address, tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_ERC20_IS_PAUSED);

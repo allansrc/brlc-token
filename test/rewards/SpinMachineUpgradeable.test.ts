@@ -187,7 +187,6 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
       await spinMachine.setExtraSpinPrice(extraSpinPrice);
       await spinMachine.setFreeSpinDelay(freeSpinDelay);
       await spinMachine.setPrizes(prizes);
-      await spinMachine.setPauser(deployer.address);
       await spinMachine.setWhitelistEnabled(false);
 
       // Required approvals
@@ -206,7 +205,9 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
       const purchasedSpinCount: number = 10;
 
       it("Is reverted if the contract is paused", async () => {
-        const txResponse: TransactionResponse = await spinMachine.pause();
+        let txResponse: TransactionResponse = await spinMachine.setPauser(deployer.address);
+        await txResponse.wait();
+        txResponse = await spinMachine.pause();
         await txResponse.wait();
         await expect(spinMachine.connect(user1).buyExtraSpin(user1.address, purchasedSpinCount))
           .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
@@ -342,7 +343,9 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
         });
 
         it("Is reverted if the contract is paused", async () => {
-          const txResponse: TransactionResponse = await spinMachine.pause();
+          let txResponse: TransactionResponse = await spinMachine.setPauser(deployer.address);
+          await txResponse.wait();
+          txResponse = await spinMachine.pause();
           await txResponse.wait();
           expect(await spinMachine.paused()).to.equal(true);
           await expect(spinMachine.connect(user1).spin())
@@ -483,7 +486,9 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
         });
 
         it("Is reverted if the contract is paused", async () => {
-          const txResponse: TransactionResponse = await spinMachine.pause();
+          let txResponse: TransactionResponse = await spinMachine.setPauser(deployer.address);
+          await txResponse.wait();
+          txResponse = await spinMachine.pause();
           await txResponse.wait();
           expect(await spinMachine.paused()).to.equal(true);
           await expect(spinMachine.connect(user1).spin())

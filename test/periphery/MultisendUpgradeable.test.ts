@@ -46,8 +46,6 @@ describe("Contract 'MultisendUpgradeable'", async () => {
     const balanceTotal: number = countNumberArrayTotal(balances);
 
     beforeEach(async () => {
-      //Configure the tested contract
-      await multisend.setPauser(deployer.address);
       await multisend.setWhitelistEnabled(true);
       let txResponse: TransactionResponse = await multisend.setWhitelistAdmin(user.address);
       await txResponse.wait();
@@ -65,7 +63,9 @@ describe("Contract 'MultisendUpgradeable'", async () => {
     })
 
     it("Is reverted if the contract is paused", async () => {
-      const txResponse: TransactionResponse = await multisend.pause();
+      let txResponse: TransactionResponse = await multisend.setPauser(deployer.address);
+      await txResponse.wait();
+      txResponse = await multisend.pause();
       await txResponse.wait();
       await expect(multisend.connect(user).multisendToken(brlcMock.address, recipientAddresses, balances))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);

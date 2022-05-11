@@ -46,7 +46,7 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
 
     beforeEach(async () => {
       cashierClient = deployer;
-      await pixCashier.setPauser(deployer.address);
+
       await pixCashier.setWhitelistEnabled(true);
       let txResponse: TransactionResponse = await pixCashier.setWhitelistAdmin(user.address);
       await txResponse.wait();
@@ -62,7 +62,9 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
     })
 
     it("Is reverted if the contract is paused", async () => {
-      const txResponse: TransactionResponse = await pixCashier.pause();
+      let txResponse: TransactionResponse =  await pixCashier.setPauser(deployer.address);
+      await txResponse.wait();
+      txResponse = await pixCashier.pause();
       await txResponse.wait();
       await expect(pixCashier.connect(user).cashIn(cashierClient.address, tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
@@ -98,13 +100,16 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
 
     beforeEach(async () => {
       cashierClient = deployer;
-      await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
-      const txResponse: TransactionResponse = await pixCashier.setPauser(deployer.address);
+
+      const txResponse: TransactionResponse =
+        await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
       await txResponse.wait();
     })
 
     it("Is reverted if the contract is paused", async () => {
-      const txResponse: TransactionResponse = await pixCashier.pause();
+      let txResponse: TransactionResponse =  await pixCashier.setPauser(deployer.address);
+      await txResponse.wait();
+      txResponse = await pixCashier.pause();
       await txResponse.wait();
       await expect(pixCashier.connect(cashierClient).cashOut(tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
@@ -148,14 +153,16 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
 
     beforeEach(async () => {
       cashierClient = deployer;
+
       await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
-      await brlcMock.mint(cashierClient.address, tokenAmount);
-      const txResponse: TransactionResponse = await pixCashier.setPauser(deployer.address);
+      const txResponse: TransactionResponse = await brlcMock.mint(cashierClient.address, tokenAmount);
       await txResponse.wait();
     })
 
     it("Is reverted if the contract is paused", async () => {
-      const txResponse: TransactionResponse = await pixCashier.pause();
+      let txResponse: TransactionResponse =  await pixCashier.setPauser(deployer.address);
+      await txResponse.wait();
+      txResponse = await pixCashier.pause();
       await txResponse.wait();
       await expect(pixCashier.connect(cashierClient).cashOutConfirm(tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
@@ -199,14 +206,16 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
 
     beforeEach(async () => {
       cashierClient = deployer;
+
       await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
-      await brlcMock.mint(cashierClient.address, tokenAmount);
-      const txResponse: TransactionResponse = await pixCashier.setPauser(deployer.address);
+      const txResponse: TransactionResponse = await brlcMock.mint(cashierClient.address, tokenAmount);
       await txResponse.wait();
     })
 
     it("Is reverted if the contract is paused", async () => {
-      const txResponse: TransactionResponse = await pixCashier.pause();
+      let txResponse: TransactionResponse =  await pixCashier.setPauser(deployer.address);
+      await txResponse.wait();
+      txResponse = await pixCashier.pause();
       await txResponse.wait();
       await expect(pixCashier.connect(cashierClient).cashOutReverse(tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);

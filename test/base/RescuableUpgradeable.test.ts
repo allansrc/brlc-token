@@ -24,12 +24,12 @@ describe("Contract 'RescuableUpgradeable'", async () => {
   it("The initialize function can't be called more than once", async () => {
     await expect(rescuableMock.initialize())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   it("The initialize unchained function can't be called more than once", async () => {
     await expect(rescuableMock.initialize_unchained())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   describe("Function 'setRescuer()'", async () => {
     it("Is reverted if is called not by the owner", async () => {
@@ -43,7 +43,7 @@ describe("Contract 'RescuableUpgradeable'", async () => {
       await txResponse.wait();
       const actualRescuerAddress: string = await rescuableMock.getRescuer();
       expect(actualRescuerAddress).to.equal(expectedRescuerAddress);
-    })
+    });
 
     it("Emits the correct event", async () => {
       const rescuerAddress: string = user.address;

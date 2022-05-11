@@ -38,7 +38,7 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
   it("The initialize function can't be called more than once", async () => {
     await expect(pixCashier.initialize(brlcMock.address))
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   describe("Function 'cashIn()'", async () => {
     const tokenAmount: number = 100;

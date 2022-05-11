@@ -38,7 +38,7 @@ describe("Contract 'MultisendUpgradeable'", async () => {
   it("The initialize function can't be called more than once", async () => {
     await expect(multisend.initialize())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   describe("Function 'multisendToken()'", async () => {
     let recipientAddresses: string[];
@@ -55,7 +55,7 @@ describe("Contract 'MultisendUpgradeable'", async () => {
       await txResponse.wait();
 
       recipientAddresses = [deployer.address, user.address];
-    })
+    });
 
     it("Is reverted if caller is not whitelisted", async () => {
       await expect(multisend.multisendToken(brlcMock.address, recipientAddresses, balances))

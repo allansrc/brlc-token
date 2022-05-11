@@ -48,12 +48,12 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
   it("The initialize function can't be called more than once", async () => {
     await expect(spinMachine.initialize(brlcMock.address))
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   it("The initialize unchained function can't be called more than once", async () => {
     await expect(spinMachine.initialize_unchained(brlcMock.address))
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   describe("Configurations", async () => {
     describe("Function 'setPrizes()'", async () => {

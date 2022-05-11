@@ -27,17 +27,17 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
 
     // Get user accounts
     [deployer, user1, user2] = await ethers.getSigners();
-  })
+  });
 
   it("The initialize function can't be called more than once", async () => {
     await expect(brlcToken.initialize(TOKEN_CONTRACT_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS))
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   it("The initialize unchained function can't be called more than once", async () => {
     await expect(brlcToken.initialize_unchained(TOKEN_DECIMALS))
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   describe("Function 'transfer()'", async () => {
     const tokenAmount: number = 123;

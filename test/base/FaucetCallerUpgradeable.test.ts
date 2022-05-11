@@ -28,12 +28,12 @@ describe("Contract 'FaucetCallerUpgradeable'", async () => {
   it("The initialize function can't be called more than once", async () => {
     await expect(faucetCallerMock.initialize())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   it("The initialize unchained function can't be called more than once", async () => {
     await expect(faucetCallerMock.initialize_unchained())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   describe("Function 'setFaucet()'", async () => {
     it("Is reverted if is called not by the owner", async () => {
@@ -52,7 +52,7 @@ describe("Contract 'FaucetCallerUpgradeable'", async () => {
       await txResponse.wait();
       const actualFaucetAddress: string = await faucetCallerMock.getFaucet();
       expect(actualFaucetAddress).to.equal(expectedFaucetAddress);
-    })
+    });
 
     it("Executes successfully if is called by the owner with zero faucet address", async () => {
       const expectedFaucetAddress: string = ethers.constants.AddressZero;
@@ -80,7 +80,7 @@ describe("Contract 'FaucetCallerUpgradeable'", async () => {
   describe("Function 'faucetRequest()'", async () => {
     it("Does not call the 'withdraw()' function of the faucet if the faucet address is zero", async () => {
       expect(await faucetCallerMock.getFaucet()).to.equal(ethers.constants.AddressZero);
-      const txResponse = await faucetCallerMock.faucetRequest(user.address);
+      const txResponse: TransactionResponse = await faucetCallerMock.faucetRequest(user.address);
       await txResponse.wait();
       expect(await faucetMock.lastWithdrawAddress()).to.equal(ethers.constants.AddressZero);
     });

@@ -33,7 +33,7 @@ describe("Contract 'SpinMachineV2Upgradeable'", async () => {
   it("The initialize function can't be called more than once", async () => {
     await expect(spinMachine.initialize(brlcMock.address))
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   //All other checks are in the test files for the ancestor contracts
 });

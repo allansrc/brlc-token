@@ -24,12 +24,12 @@ describe("Contract 'WhitelistableExUpgradeable'", async () => {
   it("The initialize function can't be called more than once", async () => {
     await expect(whitelistableExMock.initialize())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   it("The initialize unchained function can't be called more than once", async () => {
     await expect(whitelistableExMock.initialize_unchained())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   describe("Function 'updateWhitelister()'", async () => {
     beforeEach(async () => {

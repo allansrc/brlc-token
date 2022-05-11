@@ -23,17 +23,17 @@ describe("Contract 'PausableExUpgradeable'", async () => {
 
   it("Contains functions inherited from the 'PausableUpgradeable' contract", () => {
     expect(pausableExMock.functions['paused()']).to.exist
-  })
+  });
 
   it("The initialize function can't be called more than once", async () => {
     await expect(pausableExMock.initialize())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   it("The initialize unchained function can't be called more than once", async () => {
     await expect(pausableExMock.initialize_unchained())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   describe("Function 'setPauser()'", async () => {
     it("Is reverted if is called not by the owner", async () => {
@@ -47,7 +47,7 @@ describe("Contract 'PausableExUpgradeable'", async () => {
       await txResponse.wait();
       const actualPauserAddress: string = await pausableExMock.getPauser();
       expect(actualPauserAddress).to.equal(expectedPauserAddress);
-    })
+    });
 
     it("Emits the correct event", async () => {
       const pauserAddress: string = user.address;
@@ -61,7 +61,7 @@ describe("Contract 'PausableExUpgradeable'", async () => {
     beforeEach(async () => {
       const txResponse: TransactionResponse = await pausableExMock.setPauser(user.address);
       await txResponse.wait();
-    })
+    });
 
     it("Is reverted if is called not by the pauser", async () => {
       await expect(pausableExMock.pause())

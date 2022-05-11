@@ -16,12 +16,12 @@ describe("Contract 'SubstrateBRLCTokenUpgradeable'", async () => {
     const BrlcToken: ContractFactory = await ethers.getContractFactory("SubstrateBRLCTokenUpgradeable");
     brlcToken = await upgrades.deployProxy(BrlcToken, [TOKEN_CONTRACT_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS]);
     await brlcToken.deployed();
-  })
+  });
 
   it("The initialize function can't be called more than once", async () => {
     await expect(brlcToken.initialize(TOKEN_CONTRACT_NAME, TOKEN_SYMBOL, TOKEN_DECIMALS))
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   //All other checks are in the test files for the ancestor contracts
 });

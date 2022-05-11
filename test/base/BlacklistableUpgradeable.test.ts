@@ -27,12 +27,12 @@ describe("Contract 'BlacklistableUpgradeable'", async () => {
   it("The initialize function can't be called more than once", async () => {
     await expect(blacklistableMock.initialize())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   it("The initialize unchained function can't be called more than once", async () => {
     await expect(blacklistableMock.initialize_unchained())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   describe("Function 'setBlacklister()'", async () => {
     it("Is reverted if is called not by the owner", async () => {
@@ -43,7 +43,7 @@ describe("Contract 'BlacklistableUpgradeable'", async () => {
     it("Is reverted if is called with zero address", async () => {
       await expect(blacklistableMock.setBlacklister(ethers.constants.AddressZero))
         .to.be.revertedWith(REVERT_MESSAGE_IF_NEW_BLACKLISTER_IS_ZERO);
-    })
+    });
 
     it("Executes successfully if is called by the owner", async () => {
       const expectedBlacklisterAddress: string = user1.address;
@@ -51,7 +51,7 @@ describe("Contract 'BlacklistableUpgradeable'", async () => {
       await txResponse.wait();
       const actualBlacklisterAddress: string = await blacklistableMock.getBlacklister();
       expect(actualBlacklisterAddress).to.equal(expectedBlacklisterAddress);
-    })
+    });
 
     it("Emits the correct event", async () => {
       const blacklisterAddress: string = user1.address;

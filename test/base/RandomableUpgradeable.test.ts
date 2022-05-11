@@ -23,12 +23,12 @@ describe("Contract 'RandomableUpgradeable'", async () => {
   it("The initialize function can't be called more than once", async () => {
     await expect(randomableMock.initialize())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   it("The initialize unchained function can't be called more than once", async () => {
     await expect(randomableMock.initialize_unchained())
       .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED);
-  })
+  });
 
   describe("Function 'setRandomProvider()'", async () => {
     it("Is reverted if is called not by the owner", async () => {
@@ -42,7 +42,7 @@ describe("Contract 'RandomableUpgradeable'", async () => {
       await txResponse.wait();
       const actualRandomProviderAddress: string = await randomableMock.getRandomProvider();
       expect(actualRandomProviderAddress).to.equal(expectedRandomProviderAddress);
-    })
+    });
 
     it("Emits the correct event", async () => {
       const randomProviderAddress: string = user.address;

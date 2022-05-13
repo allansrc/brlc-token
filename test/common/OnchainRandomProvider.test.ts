@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 import { expect } from "chai";
 import { BigNumber, Contract, ContractFactory } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { TransactionResponse } from "@ethersproject/abstract-provider"
+import { proveTx } from "../../test-utils/eth";
 
 describe("Contract 'OnhainRandomProvider'", async () => {
   let onchainRandomProvider: Contract;
@@ -21,14 +21,12 @@ describe("Contract 'OnhainRandomProvider'", async () => {
     const randomNumber1: BigNumber = await onchainRandomProvider.getRandomness();
 
     // Wait for the next block
-    let txResponse: TransactionResponse = await deployer.sendTransaction({ to: user.address, value: 100 });
-    await txResponse.wait();
+    await proveTx(deployer.sendTransaction({ to: user.address, value: 100 }));
 
     const randomNumber2: BigNumber = await onchainRandomProvider.getRandomness();
 
     // Wait for the next block
-    txResponse = await deployer.sendTransaction({ to: user.address, value: 100 });
-    await txResponse.wait();
+    await proveTx(deployer.sendTransaction({ to: user.address, value: 100 }));
 
     const randomNumber3: BigNumber = await onchainRandomProvider.getRandomness();
 

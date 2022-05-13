@@ -2,7 +2,7 @@ import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import { Contract, ContractFactory } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { TransactionResponse } from "@ethersproject/abstract-provider"
+import { proveTx } from "../../test-utils/eth";
 
 describe("Contract 'RandomableUpgradeable'", async () => {
   const REVERT_MESSAGE_IF_CALLER_IS_NOT_OWNER: string = "Ownable: caller is not the owner";
@@ -38,8 +38,7 @@ describe("Contract 'RandomableUpgradeable'", async () => {
 
     it("Executes successfully if is called by the owner", async () => {
       const expectedRandomProviderAddress: string = pseudoRandomProvider.address;
-      const txResponse: TransactionResponse = await randomableMock.setRandomProvider(expectedRandomProviderAddress);
-      await txResponse.wait();
+      await proveTx(randomableMock.setRandomProvider(expectedRandomProviderAddress));
       const actualRandomProviderAddress: string = await randomableMock.getRandomProvider();
       expect(actualRandomProviderAddress).to.equal(expectedRandomProviderAddress);
     });
@@ -61,14 +60,12 @@ describe("Contract 'RandomableUpgradeable'", async () => {
       randomProviderMock = await RandomProviderMock.deploy();
       await randomProviderMock.deployed();
 
-      const txResponse: TransactionResponse = await randomableMock.setRandomProvider(randomProviderMock.address);
-      await txResponse.wait();
+      await proveTx(randomableMock.setRandomProvider(randomProviderMock.address));
     });
 
     it("Returns the value from the random provider", async () => {
       const expectedRandomValue: number = 123;
-      const txResponse: TransactionResponse = await randomProviderMock.setRandomNumber(expectedRandomValue);
-      await txResponse.wait();
+      await proveTx(randomProviderMock.setRandomNumber(expectedRandomValue));
       const actualRandomValue: number = await randomableMock.getRandomness();
       expect(actualRandomValue).to.equal(expectedRandomValue);
     });

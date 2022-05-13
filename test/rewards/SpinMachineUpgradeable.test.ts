@@ -3,7 +3,8 @@ import { expect } from "chai";
 import { BigNumber, Contract, ContractFactory } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { countNumberArrayTotal } from "../../test-utils/misc";
-import { Block, TransactionReceipt, TransactionResponse } from "@ethersproject/abstract-provider";
+import { Block, TransactionReceipt } from "@ethersproject/abstract-provider";
+import { proveTx } from "../../test-utils/eth";
 
 describe("Contract 'SpinMachineUpgradeable'", async () => {
   const REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED = 'Initializable: contract is already initialized';
@@ -36,8 +37,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
     const SpinMachine: ContractFactory = await ethers.getContractFactory("SpinMachineUpgradeableMock");
     spinMachine = await upgrades.deployProxy(SpinMachine, [brlcMock.address]);
     await spinMachine.deployed();
-    const txResponse: TransactionResponse = await spinMachine.setRandomProvider(onchainRandomProvider.address);
-    await txResponse.wait();
+    await proveTx(spinMachine.setRandomProvider(onchainRandomProvider.address));
 
     // Get user accounts
     [deployer, user1, user2] = await ethers.getSigners();
@@ -68,8 +68,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
       });
 
       it("Updates the prizes array correctly if is called by the owner", async () => {
-        const txResponse: TransactionResponse = await spinMachine.setPrizes(prizes);
-        await txResponse.wait();
+        await proveTx(spinMachine.setPrizes(prizes));
         const newPrizes: number[] = await spinMachine.getPrizes();
         expect(newPrizes.length).to.equal(prizes.length);
         prizes.forEach((expectedValue: number, index: number) => {
@@ -94,8 +93,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
       it("Updates the free spin delay correctly if is called by the owner", async () => {
         const oldFreeSpinDelay: BigNumber = await spinMachine.freeSpinDelay();
-        const txResponse: TransactionResponse = await spinMachine.setFreeSpinDelay(freeSpinDelay);
-        await txResponse.wait();
+        await proveTx(spinMachine.setFreeSpinDelay(freeSpinDelay));
         const newFreeSpinDelay: BigNumber = await spinMachine.freeSpinDelay();
         expect(oldFreeSpinDelay).to.not.equal(freeSpinDelay);
         expect(newFreeSpinDelay).to.equal(freeSpinDelay);
@@ -119,8 +117,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
       it("Updates the extra spin price correctly if is called by the owner", async () => {
         const oldExtraSpinPrice: BigNumber = await spinMachine.extraSpinPrice();
-        const txResponse: TransactionResponse = await spinMachine.setExtraSpinPrice(extraSpinPrice);
-        await txResponse.wait();
+        await proveTx(spinMachine.setExtraSpinPrice(extraSpinPrice));
         const newExtraSpinPrice: BigNumber = await spinMachine.extraSpinPrice();
         expect(oldExtraSpinPrice).to.not.equal(extraSpinPrice);
         expect(newExtraSpinPrice).to.equal(extraSpinPrice);
@@ -159,8 +156,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
       it("Updates the extra spins count correctly if is called by the owner", async () => {
         const oldSpinsCount: BigNumber = await spinMachine.extraSpins(spinOwner.address);
-        const txResponse: TransactionResponse = await spinMachine.grantExtraSpin(spinOwner.address, extraSpinCount);
-        await txResponse.wait();
+        await proveTx(spinMachine.grantExtraSpin(spinOwner.address, extraSpinCount));
         const newSpinsCount: BigNumber = await spinMachine.extraSpins(spinOwner.address);
         expect(newSpinsCount).to.equal(oldSpinsCount.add(BigNumber.from(extraSpinCount)));
       });
@@ -181,34 +177,25 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
     beforeEach(async () => {
       // Configure the spin machine contract
-      let txResponse: TransactionResponse = await spinMachine.setExtraSpinPrice(extraSpinPrice);
-      await txResponse.wait()
-      txResponse = await spinMachine.setFreeSpinDelay(freeSpinDelay);
-      await txResponse.wait();
-      txResponse = await spinMachine.setPrizes(prizes);
-      await txResponse.wait();
-      txResponse = await spinMachine.setWhitelistEnabled(false);
-      await txResponse.wait();
+      await proveTx(spinMachine.setExtraSpinPrice(extraSpinPrice));
+      await proveTx(spinMachine.setFreeSpinDelay(freeSpinDelay));
+      await proveTx(spinMachine.setPrizes(prizes));
 
       // Required approvals
-      txResponse = await brlcMock.connect(user1).approve(spinMachine.address, 1000);
-      await txResponse.wait();
-      txResponse = await brlcMock.connect(user2).approve(spinMachine.address, 1000);
-      await txResponse.wait();
+      await proveTx(brlcMock.connect(user1).approve(spinMachine.address, ethers.constants.MaxInt256));
     });
 
-    it("Be sure that SpinMachine has initially zero token balance", async () => {
+    it("Be sure that SpinMachine has right initial config", async () => {
       expect(await brlcMock.balanceOf(spinMachine.address)).to.equal(0);
+      expect(await spinMachine.isWhitelistEnabled()).to.equal(false);
     })
 
     describe("Function 'buyExtraSpin()'", async () => {
       const purchasedSpinCount: number = 10;
 
       it("Is reverted if the contract is paused", async () => {
-        let txResponse: TransactionResponse = await spinMachine.setPauser(deployer.address);
-        await txResponse.wait();
-        txResponse = await spinMachine.pause();
-        await txResponse.wait();
+        await proveTx(spinMachine.setPauser(deployer.address));
+        await proveTx(spinMachine.pause());
         await expect(spinMachine.connect(user1).buyExtraSpin(user1.address, purchasedSpinCount))
           .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
       });
@@ -225,33 +212,25 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
       it("Is reverted if the user has not enough token balance", async () => {
         const tokenAmount: number = extraSpinPrice * purchasedSpinCount - 1;
-        const txResponse: TransactionResponse = await brlcMock.mint(user1.address, tokenAmount);
-        await txResponse.wait();
+        await proveTx(brlcMock.mint(user1.address, tokenAmount));
         await expect(spinMachine.connect(user1).buyExtraSpin(user1.address, purchasedSpinCount))
           .to.be.revertedWith(REVERT_MESSAGE_IF_TOKEN_TRANSFER_AMOUNT_EXCEEDS_BALANCE);
       });
 
       it("Increases the extra spins count correctly", async () => {
         const tokenAmount: number = extraSpinPrice * purchasedSpinCount;
-        let txResponse: TransactionResponse = await brlcMock.mint(user1.address, tokenAmount);
-        await txResponse.wait();
         const oldSpinCount: BigNumber = await spinMachine.extraSpins(user2.address);
-        txResponse = await spinMachine.connect(user1).buyExtraSpin(user2.address, purchasedSpinCount);
-        await txResponse.wait();
+        await proveTx(brlcMock.mint(user1.address, tokenAmount));
+        await proveTx(spinMachine.connect(user1).buyExtraSpin(user2.address, purchasedSpinCount));
         const newSpinCount: BigNumber = await spinMachine.extraSpins(user2.address);
         expect(newSpinCount).to.equal(oldSpinCount.add(BigNumber.from(purchasedSpinCount)));
       });
 
       it("Transfers the correct amount of tokens", async () => {
         const tokenAmount: number = purchasedSpinCount * extraSpinPrice;
-        const txResponse: TransactionResponse = await brlcMock.mint(user1.address, tokenAmount);
-        await txResponse.wait();
-        expect(await brlcMock.balanceOf(user1.address))
-          .to.equal(tokenAmount);
+        await proveTx(brlcMock.mint(user1.address, tokenAmount));
         await expect(async () => {
-          const txResponse: TransactionResponse =
-            await spinMachine.connect(user1).buyExtraSpin(user2.address, purchasedSpinCount);
-          await txResponse.wait();
+          await proveTx(spinMachine.connect(user1).buyExtraSpin(user2.address, purchasedSpinCount));
         }).to.changeTokenBalances(
           brlcMock,
           [user1, spinMachine],
@@ -261,8 +240,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
       it("Emits the correct event", async () => {
         const tokenAmount: number = extraSpinPrice * purchasedSpinCount;
-        const txResponse: TransactionResponse = await brlcMock.mint(user1.address, tokenAmount);
-        await txResponse.wait();
+        await proveTx(brlcMock.mint(user1.address, tokenAmount));
         await expect(spinMachine.connect(user1).buyExtraSpin(user2.address, purchasedSpinCount))
           .to.emit(spinMachine, "ExtraSpinPurchased")
           .withArgs(user1.address, user2.address, purchasedSpinCount);
@@ -278,8 +256,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
       describe("Function 'spin()' when SpinMachine has zero token balance", async () => {
         it("Does not transfer any tokens", async () => {
           await expect(async () => {
-            const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-            await txResponse.wait();
+            await proveTx(spinMachine.connect(user1).spin());
           }).to.changeTokenBalances(
             brlcMock,
             [spinMachine, user1],
@@ -289,8 +266,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
         it("Does not spend free spin", async () => {
           const oldLastFreeSpin: BigNumber = await spinMachine.lastFreeSpin(user1.address);
-          const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-          await txResponse.wait();
+          await proveTx(spinMachine.connect(user1).spin());
           expect(await spinMachine.lastFreeSpin(user1.address)).to.equal(oldLastFreeSpin);
         });
       });
@@ -299,14 +275,12 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
         const tokenBalanceNotEnough: number = prize - 1;
 
         beforeEach(async () => {
-          const txResponse: TransactionResponse = await brlcMock.mint(spinMachine.address, tokenBalanceNotEnough);
-          await txResponse.wait();
+          await proveTx(brlcMock.mint(spinMachine.address, tokenBalanceNotEnough));
         });
 
         it("Transfers the correct amount of tokens", async () => {
           await expect(async () => {
-            const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-            await txResponse.wait();
+            await proveTx(spinMachine.connect(user1).spin());
           }).to.changeTokenBalances(
             brlcMock,
             [spinMachine, user1],
@@ -316,8 +290,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
         it("Spends the free spin and update the delay period", async () => {
           const oldLastFreeSpin: BigNumber = await spinMachine.lastFreeSpin(user1.address);
-          const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-          const txReceipt: TransactionReceipt = await txResponse.wait();
+          const txReceipt: TransactionReceipt = await proveTx(spinMachine.connect(user1).spin());
           const block: Block = await ethers.provider.getBlock(txReceipt.blockNumber);
           const newLastFreeSpin: BigNumber = await spinMachine.lastFreeSpin(user1.address);
           expect(await spinMachine.canSpin(user1.address)).to.equal(false);
@@ -336,24 +309,19 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
         const tokenBalanceEnough: number = prize + 1;
 
         beforeEach(async () => {
-          const txResponse: TransactionResponse = await brlcMock.mint(spinMachine.address, tokenBalanceEnough);
-          await txResponse.wait();
+          await proveTx(brlcMock.mint(spinMachine.address, tokenBalanceEnough));
         });
 
         it("Is reverted if the contract is paused", async () => {
-          let txResponse: TransactionResponse = await spinMachine.setPauser(deployer.address);
-          await txResponse.wait();
-          txResponse = await spinMachine.pause();
-          await txResponse.wait();
-          expect(await spinMachine.paused()).to.equal(true);
+          await proveTx(spinMachine.setPauser(deployer.address));
+          await proveTx(spinMachine.pause());
           await expect(spinMachine.connect(user1).spin())
             .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
         });
 
         it("Transfers correct amount of tokens", async () => {
           await expect(async () => {
-            const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-            await txResponse.wait();
+            await proveTx(spinMachine.connect(user1).spin());
           }).to.changeTokenBalances(
             brlcMock,
             [spinMachine, user1],
@@ -363,8 +331,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
         it("Spends the free spin and update the delay period correctly", async () => {
           const oldLastFreeSpin: BigNumber = await spinMachine.lastFreeSpin(user1.address);
-          const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-          const txReceipt: TransactionReceipt = await txResponse.wait();
+          const txReceipt: TransactionReceipt = await proveTx(spinMachine.connect(user1).spin());
           const block: Block = await ethers.provider.getBlock(txReceipt.blockNumber);
           const newLastFreeSpin: BigNumber = await spinMachine.lastFreeSpin(user1.address);
           expect(await spinMachine.canSpin(user1.address)).to.equal(false);
@@ -380,16 +347,14 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
         it("Does not allow the second free spin in a row", async () => {
           // First spin
-          let txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-          await txResponse.wait();
+          await proveTx(spinMachine.connect(user1).spin());
           expect(await spinMachine.canFreeSpin(user1.address)).to.equal(false);
           expect(await brlcMock.balanceOf(spinMachine.address)).to.gt(0);
 
           // Second spin
           const oldLastFreeSpin: BigNumber = await spinMachine.lastFreeSpin(user1.address);
           await expect(async () => {
-            const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-            await txResponse.wait();
+            await proveTx(spinMachine.connect(user1).spin());
           }).to.changeTokenBalances(
             brlcMock,
             [spinMachine, user1],
@@ -406,12 +371,10 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
       beforeEach(async () => {
         // Grant extra spin
-        let txResponse: TransactionResponse = await spinMachine.grantExtraSpin(user1.address, extraSpinCount);
-        await txResponse.wait();
+        await proveTx(spinMachine.grantExtraSpin(user1.address, extraSpinCount));
 
         // Block free spins
-        txResponse = await spinMachine.setFreeSpinDelay(ethers.constants.MaxInt256);
-        await txResponse.wait();
+        await proveTx(spinMachine.setFreeSpinDelay(ethers.constants.MaxInt256));
       });
 
       it("Be sure that no free spin is available, but there is an extra spin", async () => {
@@ -422,8 +385,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
       describe("Function 'spin()' when SpinMachine has zero token balance", async () => {
         it("Does not transfer any tokens", async () => {
           await expect(async () => {
-            const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-            await txResponse.wait();
+            await proveTx(spinMachine.connect(user1).spin());
           }).to.changeTokenBalances(
             brlcMock,
             [spinMachine, user1],
@@ -432,8 +394,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
         });
 
         it("Does not spend extra spins", async () => {
-          const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-          await txResponse.wait();
+          await proveTx(spinMachine.connect(user1).spin());
           expect(await spinMachine.extraSpins(user1.address)).to.equal(extraSpinCount);
         });
       });
@@ -442,16 +403,12 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
         const tokenBalanceNotEnough: number = prize - 1;
 
         beforeEach(async () => {
-          // Spin machine has 'not enough' token balance
-          const txResponse: TransactionResponse = await brlcMock.mint(spinMachine.address, tokenBalanceNotEnough);
-          await txResponse.wait();
-          expect(await brlcMock.balanceOf(spinMachine.address)).to.equal(tokenBalanceNotEnough);
+          await proveTx(brlcMock.mint(spinMachine.address, tokenBalanceNotEnough));
         });
 
         it("Transfers correct amount of tokens", async () => {
           await expect(async () => {
-            const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-            await txResponse.wait();
+            await proveTx(spinMachine.connect(user1).spin());
           }).to.changeTokenBalances(
             brlcMock,
             [spinMachine, user1],
@@ -461,8 +418,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
         it("Spends extra spins correctly", async () => {
           const oldExtraSpinCount: BigNumber = await spinMachine.extraSpins(user1.address);
-          const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-          await txResponse.wait();
+          await proveTx(spinMachine.connect(user1).spin());
           const newExtraSpinCount: BigNumber = await spinMachine.extraSpins(user1.address);
           expect(await spinMachine.canSpin(user1.address)).to.equal(false);
           expect(newExtraSpinCount).to.equal(oldExtraSpinCount.sub(BigNumber.from(1)));
@@ -479,24 +435,19 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
         const tokenBalanceEnough: number = prize + 1;
 
         beforeEach(async () => {
-          const txResponse: TransactionResponse = await brlcMock.mint(spinMachine.address, tokenBalanceEnough);
-          await txResponse.wait();
+          await proveTx(brlcMock.mint(spinMachine.address, tokenBalanceEnough));
         });
 
         it("Is reverted if the contract is paused", async () => {
-          let txResponse: TransactionResponse = await spinMachine.setPauser(deployer.address);
-          await txResponse.wait();
-          txResponse = await spinMachine.pause();
-          await txResponse.wait();
-          expect(await spinMachine.paused()).to.equal(true);
+          await proveTx(spinMachine.setPauser(deployer.address));
+          await proveTx(spinMachine.pause());
           await expect(spinMachine.connect(user1).spin())
             .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
         });
 
         it("Transfers correct amount of tokens during the first call", async () => {
           await expect(async () => {
-            const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-            await txResponse.wait();
+            await proveTx(spinMachine.connect(user1).spin());
           }).to.changeTokenBalances(
             brlcMock,
             [spinMachine, user1],
@@ -506,15 +457,13 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
         it("Transfers no tokens during the second call", async () => {
           // First spin
-          const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-          await txResponse.wait();
+          await proveTx(spinMachine.connect(user1).spin());
           expect(await spinMachine.extraSpins(user1.address)).to.equal(0);
           expect(await brlcMock.balanceOf(spinMachine.address)).to.gt(0);
 
           // Second spin
           await expect(async () => {
-            const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-            await txResponse.wait();
+            await proveTx(spinMachine.connect(user1).spin());
           }).to.changeTokenBalances(
             brlcMock,
             [spinMachine, user1],
@@ -524,8 +473,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
         it("Spends the extra spins correctly", async () => {
           const oldExtraSpinCount: BigNumber = await spinMachine.extraSpins(user1.address);
-          const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-          await txResponse.wait();
+          await proveTx(spinMachine.connect(user1).spin());
           const newExtraSpinCount: BigNumber = await spinMachine.extraSpins(user1.address);
           expect(await spinMachine.canSpin(user1.address)).to.equal(false);
           expect(newExtraSpinCount).to.equal(oldExtraSpinCount.sub(BigNumber.from(1)));
@@ -544,17 +492,11 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
       const tokenBalanceEnough: number = prize * 2 + 1;
 
       beforeEach(async () => {
-        let txResponse: TransactionResponse = await spinMachine.setWhitelistEnabled(true);
-        await txResponse.wait();
-        txResponse = await spinMachine.setWhitelistAdmin(deployer.address);
-        await txResponse.wait();
-
-        txResponse = await spinMachine.setStubWhitelister(deployer.address);
-        await txResponse.wait();
-        txResponse = await spinMachine.grantExtraSpin(user1.address, extraSpinCount);
-        await txResponse.wait();
-        txResponse = await brlcMock.mint(spinMachine.address, tokenBalanceEnough);
-        await txResponse.wait();
+        await proveTx(spinMachine.setWhitelistEnabled(true));
+        await proveTx(spinMachine.setWhitelistAdmin(deployer.address));
+        await proveTx(spinMachine.setStubWhitelister(deployer.address));
+        await proveTx(spinMachine.grantExtraSpin(user1.address, extraSpinCount));
+        await proveTx(brlcMock.mint(spinMachine.address, tokenBalanceEnough));
       });
 
       it("Be sure that the SpinMachine configuration is correct for the following tests", async () => {
@@ -572,8 +514,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
       });
 
       it("Function 'spin()' executes successfully if the user is whitelisted", async () => {
-        const txResponse: TransactionResponse = await spinMachine.whitelist(user1.address);
-        await txResponse.wait();
+        await proveTx(spinMachine.whitelist(user1.address));
         expect(await spinMachine.isWhitelisted(user1.address)).to.equal(true);
         await expect(spinMachine.connect(user1).spin())
           .to.emit(spinMachine, "Spin")
@@ -587,22 +528,19 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
           .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_NOT_WHITELISTED);
 
         //The user is added to the whitelist, free spin
-        let txResponse: TransactionResponse = await spinMachine.whitelist(user1.address);
-        await txResponse.wait();
+        await proveTx(spinMachine.whitelist(user1.address));
         expect(await spinMachine.isWhitelisted(user1.address)).to.equal(true);
         await expect(spinMachine.connect(user1).spin())
           .to.emit(spinMachine, "Spin")
           .withArgs(user1.address, prize, prize, false);
 
         //The user is removed from the list again
-        txResponse = await spinMachine.unWhitelist(user1.address);
-        await txResponse.wait();
+        await proveTx(spinMachine.unWhitelist(user1.address));
         await expect(spinMachine.connect(user1).spin())
           .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_NOT_WHITELISTED);
 
         //The user is added to the whitelist again, extra spin
-        txResponse = await spinMachine.whitelist(user1.address);
-        await txResponse.wait();
+        await proveTx(spinMachine.whitelist(user1.address));
         expect(await spinMachine.isWhitelisted(user1.address)).to.equal(true);
         await expect(spinMachine.connect(user1).spin())
           .to.emit(spinMachine, "Spin")
@@ -623,23 +561,19 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
         faucetMock = await FaucetMock.deploy();
         await faucetMock.deployed();
 
-        const txResponse: TransactionResponse = await brlcMock.mint(spinMachine.address, tokenBalanceEnough);
-        await txResponse.wait();
+        await proveTx(brlcMock.mint(spinMachine.address, tokenBalanceEnough));
       });
 
       it("Function 'spin()' does not use the faucet to refunding if the faucet address is zero", async () => {
         expect(await spinMachine.getFaucet()).to.equal(ethers.constants.AddressZero);
-        const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-        await txResponse.wait();
+        await proveTx(spinMachine.connect(user1).spin());
         expect(await faucetMock.lastWithdrawAddress()).to.equal(ethers.constants.AddressZero);
       });
 
       it("Function 'spin()' uses the faucet to refunding if the faucet address is non-zero", async () => {
-        let txResponse: TransactionResponse = await spinMachine.setFaucet(faucetMock.address);
-        await txResponse.wait();
+        await proveTx(spinMachine.setFaucet(faucetMock.address));
         expect(await spinMachine.getFaucet()).to.equal(faucetMock.address);
-        txResponse = await spinMachine.connect(user1).spin();
-        await txResponse.wait();
+        await proveTx(spinMachine.connect(user1).spin());
         expect(await faucetMock.lastWithdrawAddress()).to.equal(user1.address);
       });
     });
@@ -650,19 +584,15 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
       const zeroPrizes: number[] = [0];
 
       beforeEach(async () => {
-        let txResponse: TransactionResponse = await brlcMock.mint(spinMachine.address, tokenBalanceEnough);
-        await txResponse.wait();
-        txResponse = await spinMachine.grantExtraSpin(user1.address, extraSpinsCount);
-        await txResponse.wait();
-        txResponse = await spinMachine.setPrizes(zeroPrizes);
-        await txResponse.wait();
+        await proveTx(brlcMock.mint(spinMachine.address, tokenBalanceEnough));
+        await proveTx(spinMachine.grantExtraSpin(user1.address, extraSpinsCount));
+        await proveTx(spinMachine.setPrizes(zeroPrizes));
       });
 
       it("Function 'spin()' transfers zero tokens both during the free spin and extra spin", async () => {
         //The free spin
         await expect(async () => {
-          const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-          await txResponse.wait();
+          await proveTx(spinMachine.connect(user1).spin());
         }).to.changeTokenBalances(
           brlcMock,
           [spinMachine, user1],
@@ -671,8 +601,7 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
 
         //The extra spin
         await expect(async () => {
-          const txResponse: TransactionResponse = await spinMachine.connect(user1).spin();
-          await txResponse.wait();
+          await proveTx(spinMachine.connect(user1).spin());
         }).to.changeTokenBalances(
           brlcMock,
           [spinMachine, user1],
@@ -706,25 +635,19 @@ describe("Contract 'SpinMachineUpgradeable'", async () => {
         mockRandomProvider = await RandomProviderMock.deploy();
         await mockRandomProvider.deployed();
 
-        let txResponse: TransactionResponse = await spinMachine.setRandomProvider(mockRandomProvider.address);
-        await txResponse.wait();
-        txResponse = await spinMachine.setPrizes(prizes);
-        await txResponse.wait();
-        txResponse = await spinMachine.grantExtraSpin(user1.address, numberOfPrizes);
-        await txResponse.wait();
-        txResponse = await brlcMock.mint(spinMachine.address, prizes[0] + prizeTotal); //free spin + extra spins
-        await txResponse.wait();
+        await proveTx(spinMachine.setRandomProvider(mockRandomProvider.address));
+        await proveTx(spinMachine.setPrizes(prizes));
+        await proveTx(spinMachine.grantExtraSpin(user1.address, numberOfPrizes));
+        await proveTx(brlcMock.mint(spinMachine.address, prizes[0] + prizeTotal)); //free spin + extra spins
 
         //Spend the free spin, only extra spins should stay
-        txResponse = await spinMachine.connect(user1).spin();
-        await txResponse.wait();
+        await proveTx(spinMachine.connect(user1).spin());
       });
 
       it("Performs according to numbers from random provider", async () => {
         for (let i: number = 0; i < numberOfPrizes; ++i) {
           let prize: number = prizes[i];
-          const txResponse: TransactionResponse = await mockRandomProvider.setRandomNumber(i);
-          await txResponse.wait();
+          await proveTx(mockRandomProvider.setRandomNumber(i));
           await expect(spinMachine.connect(user1).spin())
             .to.emit(spinMachine, "Spin")
             .withArgs(user1.address, prize, prize, true);

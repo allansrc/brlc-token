@@ -2,7 +2,7 @@ import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import { Contract, ContractFactory } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { TransactionResponse } from "@ethersproject/abstract-provider"
+import { proveTx } from "../../test-utils/eth";
 
 describe("Contract 'WhitelistableExUpgradeable'", async () => {
   const REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED = 'Initializable: contract is already initialized';
@@ -32,8 +32,7 @@ describe("Contract 'WhitelistableExUpgradeable'", async () => {
 
   describe("Function 'updateWhitelister()'", async () => {
     beforeEach(async () => {
-      const txResponse: TransactionResponse = await whitelistableExMock.setWhitelistAdmin(user.address);
-      await txResponse.wait();
+      await proveTx(whitelistableExMock.setWhitelistAdmin(user.address));
     });
 
     it("Is reverted if is called not by the whitelist admin", async () => {
@@ -44,13 +43,10 @@ describe("Contract 'WhitelistableExUpgradeable'", async () => {
     it("Executes successfully if is called by the whitelist admin", async () => {
       expect(await whitelistableExMock.isWhitelister(deployer.address)).to.equal(false);
 
-      let txResponse: TransactionResponse =
-        await whitelistableExMock.connect(user).updateWhitelister(deployer.address, true);
-      await txResponse.wait();
+      await proveTx(whitelistableExMock.connect(user).updateWhitelister(deployer.address, true));
       expect(await whitelistableExMock.isWhitelister(deployer.address)).to.equal(true);
 
-      txResponse = await whitelistableExMock.connect(user).updateWhitelister(deployer.address, false);
-      await txResponse.wait();
+      await proveTx(whitelistableExMock.connect(user).updateWhitelister(deployer.address, false));
       expect(await whitelistableExMock.isWhitelister(deployer.address)).to.equal(false);
     });
 

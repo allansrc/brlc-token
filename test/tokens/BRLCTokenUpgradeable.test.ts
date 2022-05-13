@@ -2,7 +2,7 @@ import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import { BigNumber, Contract, ContractFactory } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { TransactionResponse } from "@ethersproject/abstract-provider";
+import { proveTx } from "../../test-utils/eth";
 
 describe("Contract 'BRLCTokenUpgradeable'", async () => {
   const TOKEN_NAME = "BRL Coin";
@@ -43,37 +43,31 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     const tokenAmount: number = 123;
 
     beforeEach(async () => {
-      const txResponse: TransactionResponse = await brlcToken.mint(user1.address, tokenAmount);
-      await txResponse.wait();
+      await proveTx(brlcToken.mint(user1.address, tokenAmount));
     });
 
     it("Is reverted if the contract is paused", async () => {
-      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
-      await txResponse.wait();
-      txResponse = await brlcToken.pause();
-      await txResponse.wait();
+      await proveTx(brlcToken.setPauser(deployer.address));
+      await proveTx(brlcToken.pause());
       await expect(brlcToken.connect(user1).transfer(user2.address, tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
     });
 
     it("Is reverted if the caller is blacklisted", async () => {
-      const txResponse: TransactionResponse = await brlcToken.connect(user1).selfBlacklist();
-      await txResponse.wait();
+      await proveTx(brlcToken.connect(user1).selfBlacklist());
       await expect(brlcToken.connect(user1).transfer(user2.address, tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });
 
     it("Is reverted if the recipient is blacklisted", async () => {
-      const txResponse: TransactionResponse = await brlcToken.connect(user2).selfBlacklist();
-      await txResponse.wait();
+      await proveTx(brlcToken.connect(user2).selfBlacklist());
       await expect(brlcToken.connect(user1).transfer(user2.address, tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });
 
     it("Updates the token balances correctly", async () => {
       await expect(async () => {
-        const txResponse: TransactionResponse = await brlcToken.connect(user1).transfer(user2.address, tokenAmount);
-        await txResponse.wait();
+        await proveTx(brlcToken.connect(user1).transfer(user2.address, tokenAmount));
       }).to.changeTokenBalances(
         brlcToken,
         [user1, user2],
@@ -92,32 +86,27 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     const allowance: number = 123;
 
     it("Is reverted if the contract is paused", async () => {
-      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
-      await txResponse.wait();
-      txResponse = await brlcToken.pause();
-      await txResponse.wait();
+      await proveTx(brlcToken.setPauser(deployer.address));
+      await proveTx(brlcToken.pause());
       await expect(brlcToken.approve(user1.address, allowance))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
     });
 
     it("Is reverted if the caller is blacklisted", async () => {
-      const txResponse: TransactionResponse = await brlcToken.selfBlacklist();
-      await txResponse.wait();
+      await proveTx(brlcToken.selfBlacklist());
       await expect(brlcToken.approve(user1.address, allowance))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });
 
     it("Is reverted if the spender is blacklisted", async () => {
-      const txResponse: TransactionResponse = await brlcToken.connect(user1).selfBlacklist();
-      await txResponse.wait();
+      await proveTx(brlcToken.connect(user1).selfBlacklist());
       await expect(brlcToken.approve(user1.address, allowance))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });
 
     it("Updates the allowance correctly", async () => {
       const oldAllowance: BigNumber = await brlcToken.allowance(deployer.address, user1.address);
-      const txResponse: TransactionResponse = await brlcToken.approve(user1.address, allowance);
-      await txResponse.wait();
+      await proveTx(brlcToken.approve(user1.address, allowance));
       const newAllowance: BigNumber = await brlcToken.allowance(deployer.address, user1.address);
       expect(newAllowance).to.equal(oldAllowance.add(BigNumber.from(allowance)));
     });
@@ -133,40 +122,32 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     const tokenAmount: number = 123;
 
     beforeEach(async () => {
-      let txResponse: TransactionResponse = await brlcToken.approve(user1.address, tokenAmount);
-      await txResponse.wait();
-      txResponse = await brlcToken.mint(deployer.address, tokenAmount);
-      await txResponse.wait();
+      await proveTx(brlcToken.approve(user1.address, tokenAmount));
+      await proveTx(brlcToken.mint(deployer.address, tokenAmount));
     })
 
     it("Is reverted if the contract is paused", async () => {
-      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
-      await txResponse.wait();
-      txResponse = await brlcToken.pause();
-      await txResponse.wait();
+      await proveTx(brlcToken.setPauser(deployer.address));
+      await proveTx(brlcToken.pause());
       await expect(brlcToken.connect(user1).transferFrom(deployer.address, user2.address, tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
     });
 
     it("Is reverted if the sender is blacklisted", async () => {
-      const txResponse: TransactionResponse = await brlcToken.selfBlacklist();
-      await txResponse.wait();
+      await proveTx(brlcToken.selfBlacklist());
       await expect(brlcToken.connect(user1).transferFrom(deployer.address, user2.address, tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });
 
     it("Is reverted if the recipient is blacklisted", async () => {
-      const txResponse: TransactionResponse = await brlcToken.connect(user2).selfBlacklist();
-      await txResponse.wait();
+      await proveTx(brlcToken.connect(user2).selfBlacklist());
       await expect(brlcToken.connect(user1).transferFrom(deployer.address, user2.address, tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });
 
     it("Updates the token balances correctly", async () => {
       await expect(async () => {
-        const txResponse: TransactionResponse =
-          await brlcToken.connect(user1).transferFrom(deployer.address, user2.address, tokenAmount);
-        await txResponse.wait();
+        await proveTx(brlcToken.connect(user1).transferFrom(deployer.address, user2.address, tokenAmount));
       }).to.changeTokenBalances(
         brlcToken,
         [deployer, user2],
@@ -186,37 +167,31 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     const allowanceAddedValue: number = 456;
 
     beforeEach(async () => {
-      const txResponse: TransactionResponse = await brlcToken.approve(user1.address, initialAllowance);
-      await txResponse.wait();
+      await proveTx(brlcToken.approve(user1.address, initialAllowance));
     })
 
     it("Is reverted if the contract is paused", async () => {
-      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
-      await txResponse.wait();
-      txResponse = await brlcToken.pause();
-      await txResponse.wait();
+      await proveTx(brlcToken.setPauser(deployer.address));
+      await proveTx(brlcToken.pause());
       await expect(brlcToken.increaseAllowance(user1.address, allowanceAddedValue))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
     });
 
     it("Is reverted if the caller is blacklisted", async () => {
-      const txResponse: TransactionResponse = await brlcToken.selfBlacklist();
-      await txResponse.wait();
+      await proveTx(brlcToken.selfBlacklist());
       await expect(brlcToken.increaseAllowance(user1.address, allowanceAddedValue))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });
 
     it("Is reverted if the spender is blacklisted", async () => {
-      const txResponse: TransactionResponse = await brlcToken.connect(user1).selfBlacklist();
-      await txResponse.wait();
+      await proveTx(brlcToken.connect(user1).selfBlacklist());
       await expect(brlcToken.increaseAllowance(user1.address, allowanceAddedValue))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });
 
     it("Updates the allowance correctly", async () => {
       const oldAllowance: BigNumber = await brlcToken.allowance(deployer.address, user1.address);
-      const txResponse: TransactionResponse = await brlcToken.increaseAllowance(user1.address, allowanceAddedValue);
-      await txResponse.wait();
+      await proveTx(brlcToken.increaseAllowance(user1.address, allowanceAddedValue));
       const newAllowance: BigNumber = await brlcToken.allowance(deployer.address, user1.address);
       expect(newAllowance).to.equal(oldAllowance.add(BigNumber.from(allowanceAddedValue)));
     });
@@ -233,38 +208,31 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     const allowanceSubtractedValue: number = 123;
 
     beforeEach(async () => {
-      const txResponse: TransactionResponse = await brlcToken.approve(user1.address, initialAllowance);
-      await txResponse.wait();
+      await proveTx(brlcToken.approve(user1.address, initialAllowance));
     })
 
     it("Is reverted if the contract is paused", async () => {
-      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
-      await txResponse.wait();
-      txResponse = await brlcToken.pause();
-      await txResponse.wait();
+      await proveTx(brlcToken.setPauser(deployer.address));
+      await proveTx(brlcToken.pause());
       await expect(brlcToken.decreaseAllowance(user1.address, allowanceSubtractedValue))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
     });
 
     it("Is reverted if the caller is blacklisted", async () => {
-      const txResponse: TransactionResponse = await brlcToken.selfBlacklist();
-      await txResponse.wait();
+      await proveTx(brlcToken.selfBlacklist());
       await expect(brlcToken.decreaseAllowance(user1.address, allowanceSubtractedValue))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });
 
     it("Is reverted if the spender is blacklisted", async () => {
-      const txResponse: TransactionResponse = await brlcToken.connect(user1).selfBlacklist();
-      await txResponse.wait();
+      await proveTx(brlcToken.connect(user1).selfBlacklist());
       await expect(brlcToken.decreaseAllowance(user1.address, allowanceSubtractedValue))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });
 
     it("Updates the allowance correctly", async () => {
       const oldAllowance: BigNumber = await brlcToken.allowance(deployer.address, user1.address);
-      const txResponse: TransactionResponse =
-        await brlcToken.decreaseAllowance(user1.address, allowanceSubtractedValue);
-      await txResponse.wait();
+      await proveTx(brlcToken.decreaseAllowance(user1.address, allowanceSubtractedValue));
       const newAllowance: BigNumber = await brlcToken.allowance(deployer.address, user1.address);
       expect(newAllowance).to.equal(oldAllowance.sub(BigNumber.from(allowanceSubtractedValue)));
     });
@@ -280,10 +248,8 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     const tokenAmount: number = 123;
 
     it("Is reverted if the contract is paused", async () => {
-      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
-      await txResponse.wait();
-      txResponse = await brlcToken.pause();
-      await txResponse.wait();
+      await proveTx(brlcToken.setPauser(deployer.address));
+      await proveTx(brlcToken.pause());
       await expect(brlcToken.testBeforeTokenTransfer(user1.address, user2.address, tokenAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_ERC20_IS_PAUSED);
     });

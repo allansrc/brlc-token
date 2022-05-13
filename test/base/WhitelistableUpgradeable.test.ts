@@ -2,7 +2,7 @@ import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import { Contract, ContractFactory } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { TransactionResponse } from "@ethersproject/abstract-provider"
+import { proveTx } from "../../test-utils/eth";
 
 describe("Contract 'WhitelistableUpgradeable'", async () => {
   const REVERT_MESSAGE_IF_CALLER_IS_NOT_OWNER = "Ownable: caller is not the owner";
@@ -41,8 +41,7 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
 
     it("Executes successfully if is called by the owner", async () => {
       const expectedWhitelistAdminAddress: string = user.address;
-      let txResponse: TransactionResponse = await whitelistableMock.setWhitelistAdmin(expectedWhitelistAdminAddress);
-      await txResponse.wait();
+      await proveTx(whitelistableMock.setWhitelistAdmin(expectedWhitelistAdminAddress));
       const actualWhitelistAdminAddress: string = await whitelistableMock.getWhitelistAdmin();
       expect(actualWhitelistAdminAddress).to.equal(expectedWhitelistAdminAddress);
     });
@@ -62,8 +61,7 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
     });
 
     it("Does not revert the target function if the caller is the whitelist admin", async () => {
-      const txResponse: TransactionResponse = await whitelistableMock.setWhitelistAdmin(user.address);
-      await txResponse.wait();
+      await proveTx(whitelistableMock.setWhitelistAdmin(user.address));
       await expect(whitelistableMock.connect(user).testOnlyWhitelistAdminModifier())
         .to.emit(whitelistableMock, "TestOnlyWhitelistAdminModifierSucceeded");
     });
@@ -72,14 +70,12 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
   describe("Function 'isWhitelistEnabled()'", async () => {
     it("Returns an expected value", async () => {
       let valueOfWhitelistEnabling: boolean = true;
-      let txResponse: TransactionResponse = await whitelistableMock.setWhitelistEnabled(valueOfWhitelistEnabling);
-      await txResponse.wait();
+      await proveTx(whitelistableMock.setWhitelistEnabled(valueOfWhitelistEnabling));
 
       expect(await whitelistableMock.isWhitelistEnabled()).to.equal(valueOfWhitelistEnabling);
 
       valueOfWhitelistEnabling = false;
-      txResponse = await whitelistableMock.setWhitelistEnabled(valueOfWhitelistEnabling);
-      await txResponse.wait();
+      await proveTx(whitelistableMock.setWhitelistEnabled(valueOfWhitelistEnabling));
 
       expect(await whitelistableMock.isWhitelistEnabled()).to.equal(valueOfWhitelistEnabling);
     });
@@ -87,8 +83,7 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
 
   describe("Function 'whitelist()'", async () => {
     beforeEach(async () => {
-      const txResponse: TransactionResponse = await whitelistableMock.setStubWhitelister(user.address);
-      await txResponse.wait();
+      await proveTx(whitelistableMock.setStubWhitelister(user.address));
     });
 
     it("Is reverted if is called not by a whitelister", async () => {
@@ -98,8 +93,7 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
 
     it("Executes successfully if is called by a whitelister", async () => {
       expect(await whitelistableMock.isWhitelisted(deployer.address)).to.equal(false);
-      const txResponse: TransactionResponse = await whitelistableMock.connect(user).whitelist(deployer.address);
-      await txResponse.wait();
+      await proveTx(whitelistableMock.connect(user).whitelist(deployer.address));
       expect(await whitelistableMock.isWhitelisted(deployer.address)).to.equal(true);
     });
 
@@ -112,12 +106,9 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
 
   describe("Function 'unWhitelist()'", async () => {
     beforeEach(async () => {
-      let txResponse: TransactionResponse = await whitelistableMock.setStubWhitelister(user.address);
-      await txResponse.wait();
-
-      txResponse = await whitelistableMock.connect(user).whitelist(deployer.address);
-      await txResponse.wait();
-    })
+      await proveTx(whitelistableMock.setStubWhitelister(user.address));
+      await proveTx(whitelistableMock.connect(user).whitelist(deployer.address));
+    });
 
     it("Is reverted if is called not by a whitelister", async () => {
       await expect(whitelistableMock.unWhitelist(user.address))
@@ -126,8 +117,7 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
 
     it("Executes successfully if is called by a whitelister", async () => {
       expect(await whitelistableMock.isWhitelisted(deployer.address)).to.equal(true);
-      const txResponse: TransactionResponse = await whitelistableMock.connect(user).unWhitelist(deployer.address);
-      await txResponse.wait();
+      await proveTx(whitelistableMock.connect(user).unWhitelist(deployer.address));
       expect(await whitelistableMock.isWhitelisted(deployer.address)).to.equal(false);
     });
 
@@ -140,10 +130,8 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
 
   describe("Modifier 'onlyWhitelisted'", async () => {
     beforeEach(async () => {
-      let txResponse: TransactionResponse = await whitelistableMock.setWhitelistEnabled(true);
-      await txResponse.wait();
-      txResponse = await whitelistableMock.setStubWhitelister(user.address);
-      await txResponse.wait();
+      await proveTx(whitelistableMock.setWhitelistEnabled(true));
+      await proveTx(whitelistableMock.setStubWhitelister(user.address));
     })
 
     it("Reverts the target function if the caller is not whitelisted", async () => {
@@ -152,17 +140,14 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
     });
 
     it("Does not revert the target function if the caller is whitelisted", async () => {
-      const txResponse: TransactionResponse = await whitelistableMock.connect(user).whitelist(deployer.address);
-      await txResponse.wait();
+      await proveTx(whitelistableMock.connect(user).whitelist(deployer.address));
       await expect(whitelistableMock.testOnlyWhitelistedModifier())
         .to.emit(whitelistableMock, "TestOnlyWhitelistedModifierSucceeded");
     });
 
     it("Does not revert the target function if the whitelist is disabled", async () => {
-      let txResponse: TransactionResponse = await whitelistableMock.connect(user).unWhitelist(deployer.address);
-      await txResponse.wait();
-      txResponse = await whitelistableMock.setWhitelistEnabled(false);
-      await txResponse.wait();
+      await proveTx(whitelistableMock.connect(user).unWhitelist(deployer.address));
+      await proveTx(whitelistableMock.setWhitelistEnabled(false));
       await expect(whitelistableMock.testOnlyWhitelistedModifier())
         .to.emit(whitelistableMock, "TestOnlyWhitelistedModifierSucceeded");
     });

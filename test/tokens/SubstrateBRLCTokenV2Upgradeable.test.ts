@@ -2,7 +2,7 @@ import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import { BigNumber, Contract, ContractFactory } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { TransactionResponse } from "@ethersproject/abstract-provider";
+import { proveTx } from "../../test-utils/eth";
 
 describe("Contract 'SubstrateBRLCTokenV2Upgradeable'", async () => {
   const TOKEN_NAME = "BRL Coin";
@@ -48,8 +48,7 @@ describe("Contract 'SubstrateBRLCTokenV2Upgradeable'", async () => {
     });
 
     it("Executes successfully if is called by the owner", async () => {
-      const txResponse: TransactionResponse = await brlcToken.updateMasterMinter(user1.address);
-      await txResponse.wait();
+      await proveTx(brlcToken.updateMasterMinter(user1.address));
       expect(await brlcToken.masterMinter()).to.equal(user1.address);
     });
 
@@ -64,15 +63,12 @@ describe("Contract 'SubstrateBRLCTokenV2Upgradeable'", async () => {
     const mintAllowance: number = 123;
 
     beforeEach(async () => {
-      const txResponse: TransactionResponse = await brlcToken.updateMasterMinter(user1.address);
-      await txResponse.wait();
+      await proveTx(brlcToken.updateMasterMinter(user1.address));
     });
 
     it("Is reverted if the contract is paused", async () => {
-      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
-      await txResponse.wait();
-      txResponse = await brlcToken.pause();
-      await txResponse.wait();
+      await proveTx(brlcToken.setPauser(deployer.address));
+      await proveTx(brlcToken.pause());
       await expect(brlcToken.configureMinter(user1.address, mintAllowance))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
     });
@@ -83,9 +79,7 @@ describe("Contract 'SubstrateBRLCTokenV2Upgradeable'", async () => {
     });
 
     it("Executes successfully if is called by the master minter", async () => {
-      const txResponse: TransactionResponse =
-        await brlcToken.connect(user1).configureMinter(user2.address, mintAllowance);
-      await txResponse.wait();
+      await proveTx(brlcToken.connect(user1).configureMinter(user2.address, mintAllowance));
       expect(await brlcToken.isMinter(user2.address)).to.equal(true);
       expect(await brlcToken.minterAllowance(user2.address)).to.equal(mintAllowance);
     });
@@ -101,10 +95,8 @@ describe("Contract 'SubstrateBRLCTokenV2Upgradeable'", async () => {
     const mintAllowance: number = 123;
 
     beforeEach(async () => {
-      let txResponse: TransactionResponse = await brlcToken.updateMasterMinter(user1.address);
-      await txResponse.wait();
-      txResponse = await brlcToken.connect(user1).configureMinter(user2.address, mintAllowance);
-      await txResponse.wait();
+      await proveTx(brlcToken.updateMasterMinter(user1.address));
+      await proveTx(brlcToken.connect(user1).configureMinter(user2.address, mintAllowance));
     });
 
     it("Is reverted if is called not by the master minter", async () => {
@@ -115,9 +107,7 @@ describe("Contract 'SubstrateBRLCTokenV2Upgradeable'", async () => {
     it("Executes successfully if is called by the master minter", async () => {
       expect(await brlcToken.isMinter(user2.address)).to.equal(true);
       expect(await brlcToken.minterAllowance(user2.address)).to.equal(mintAllowance);
-      const txResponse: TransactionResponse =
-        await brlcToken.connect(user1).removeMinter(user2.address);
-      await txResponse.wait();
+      await proveTx(brlcToken.connect(user1).removeMinter(user2.address));
       expect(await brlcToken.isMinter(user2.address)).to.equal(false);
       expect(await brlcToken.minterAllowance(user2.address)).to.equal(0);
     });
@@ -134,38 +124,31 @@ describe("Contract 'SubstrateBRLCTokenV2Upgradeable'", async () => {
     const mintAmount: number = 123;
 
     beforeEach(async () => {
-      let txResponse: TransactionResponse = await brlcToken.updateMasterMinter(deployer.address);
-      await txResponse.wait();
-      txResponse = await brlcToken.configureMinter(deployer.address, mintAllowance);
-      await txResponse.wait();
+      await proveTx(brlcToken.updateMasterMinter(deployer.address));
+      await proveTx(brlcToken.configureMinter(deployer.address, mintAllowance));
     });
 
     it("Is reverted if the contract is paused", async () => {
-      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
-      await txResponse.wait();
-      txResponse = await brlcToken.pause();
-      await txResponse.wait();
+      await proveTx(brlcToken.setPauser(deployer.address));
+      await proveTx(brlcToken.pause());
       await expect(brlcToken.mint(user1.address, mintAllowance))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
     });
 
     it("Is reverted if the caller is not a minter", async () => {
-      const txResponse: TransactionResponse = await brlcToken.removeMinter(deployer.address);
-      await txResponse.wait();
+      await proveTx(brlcToken.removeMinter(deployer.address));
       await expect(brlcToken.mint(user1.address, mintAllowance))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CALLER_IS_NOT_MINTER);
     });
 
     it("Is reverted if the caller is blacklisted", async () => {
-      const txResponse: TransactionResponse = await brlcToken.selfBlacklist();
-      await txResponse.wait();
+      await proveTx(brlcToken.selfBlacklist());
       await expect(brlcToken.mint(user1.address, mintAllowance))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });
 
     it("Is reverted if the destination address is blacklisted", async () => {
-      const txResponse: TransactionResponse = await brlcToken.connect(user1).selfBlacklist();
-      await txResponse.wait();
+      await proveTx(brlcToken.connect(user1).selfBlacklist());
       await expect(brlcToken.mint(user1.address, mintAllowance))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });
@@ -188,8 +171,7 @@ describe("Contract 'SubstrateBRLCTokenV2Upgradeable'", async () => {
     it("Updates the token balance and the mint allowance correctly", async () => {
       const oldMintAllowance: BigNumber = await brlcToken.minterAllowance(deployer.address);
       await expect(async () => {
-        const txResponse: TransactionResponse = await brlcToken.mint(user1.address, mintAmount);
-        await txResponse.wait();
+        await proveTx(brlcToken.mint(user1.address, mintAmount));
       }).to.changeTokenBalances(
         brlcToken,
         [user1],
@@ -212,33 +194,26 @@ describe("Contract 'SubstrateBRLCTokenV2Upgradeable'", async () => {
     const burnAmount: number = 123;
 
     beforeEach(async () => {
-      let txResponse: TransactionResponse = await brlcToken.updateMasterMinter(deployer.address);
-      await txResponse.wait();
-      txResponse = await brlcToken.configureMinter(deployer.address, burnAmount);
-      await txResponse.wait();
-      txResponse = await brlcToken.mint(deployer.address, burnAmount);
-      await txResponse.wait();
+      await proveTx(brlcToken.updateMasterMinter(deployer.address));
+      await proveTx(brlcToken.configureMinter(deployer.address, burnAmount));
+      await proveTx(brlcToken.mint(deployer.address, burnAmount));
     });
 
     it("Is reverted if the contract is paused", async () => {
-      let txResponse: TransactionResponse = await brlcToken.setPauser(deployer.address);
-      await txResponse.wait();
-      txResponse = await brlcToken.pause();
-      await txResponse.wait();
+      await proveTx(brlcToken.setPauser(deployer.address));
+      await proveTx(brlcToken.pause());
       await expect(brlcToken.burn(burnAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CONTRACT_IS_PAUSED);
     });
 
     it("Is reverted if the caller is not a minter", async () => {
-      const txResponse: TransactionResponse = await brlcToken.removeMinter(deployer.address);
-      await txResponse.wait();
+      await proveTx(brlcToken.removeMinter(deployer.address));
       await expect(brlcToken.burn(burnAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_CALLER_IS_NOT_MINTER);
     });
 
     it("Is reverted if the caller is blacklisted", async () => {
-      const txResponse: TransactionResponse = await brlcToken.selfBlacklist();
-      await txResponse.wait();
+      await proveTx(brlcToken.selfBlacklist());
       await expect(brlcToken.burn(burnAmount))
         .to.be.revertedWith(REVERT_MESSAGE_IF_ACCOUNT_IS_BLACKLISTED);
     });
@@ -255,8 +230,7 @@ describe("Contract 'SubstrateBRLCTokenV2Upgradeable'", async () => {
 
     it("Updates the token balance correctly", async () => {
       await expect(async () => {
-        const txResponse: TransactionResponse = await brlcToken.burn(burnAmount);
-        await txResponse.wait();
+        await proveTx(brlcToken.burn(burnAmount));
       }).to.changeTokenBalances(
         brlcToken,
         [deployer],

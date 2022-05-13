@@ -1,7 +1,7 @@
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import { Contract, ContractFactory } from "ethers";
-import { TransactionResponse } from "@ethersproject/abstract-provider";
+import { proveTx } from "../../test-utils/eth";
 
 describe("Contract 'SpinMachineV2Upgradeable'", async () => {
   const REVERT_MESSAGE_IF_CONTRACT_IS_ALREADY_INITIALIZED = 'Initializable: contract is already initialized';
@@ -26,8 +26,7 @@ describe("Contract 'SpinMachineV2Upgradeable'", async () => {
     const SpinMachine: ContractFactory = await ethers.getContractFactory("SpinMachineV2Upgradeable");
     spinMachine = await upgrades.deployProxy(SpinMachine, [brlcMock.address]);
     await spinMachine.deployed();
-    const txResponse: TransactionResponse = await spinMachine.setRandomProvider(onchainRandomProvider.address);
-    await txResponse.wait();
+    await proveTx(spinMachine.setRandomProvider(onchainRandomProvider.address));
   });
 
   it("The initialize function can't be called more than once", async () => {

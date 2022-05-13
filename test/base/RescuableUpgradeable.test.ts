@@ -2,7 +2,7 @@ import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import { Contract, ContractFactory } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { TransactionResponse } from "@ethersproject/abstract-provider"
+import { proveTx } from "../../test-utils/eth";
 
 describe("Contract 'RescuableUpgradeable'", async () => {
   const REVERT_MESSAGE_IF_CALLER_IS_NOT_OWNER = "Ownable: caller is not the owner";
@@ -39,8 +39,7 @@ describe("Contract 'RescuableUpgradeable'", async () => {
 
     it("Executes successfully if is called by the owner", async () => {
       const expectedRescuerAddress: string = user.address;
-      const txResponse: TransactionResponse = await rescuableMock.setRescuer(expectedRescuerAddress);
-      await txResponse.wait();
+      await proveTx(rescuableMock.setRescuer(expectedRescuerAddress));
       const actualRescuerAddress: string = await rescuableMock.getRescuer();
       expect(actualRescuerAddress).to.equal(expectedRescuerAddress);
     });
@@ -62,10 +61,8 @@ describe("Contract 'RescuableUpgradeable'", async () => {
       brlcMock = await upgrades.deployProxy(BRLCMock, ["BRL Coin", "BRLC", 6]);
       await brlcMock.deployed();
 
-      let txResponse: TransactionResponse = await brlcMock.mint(rescuableMock.address, tokenBalance);
-      await txResponse.wait();
-      txResponse = await rescuableMock.setRescuer(user.address);
-      await txResponse.wait();
+      await proveTx(brlcMock.mint(rescuableMock.address, tokenBalance));
+      await proveTx(rescuableMock.setRescuer(user.address));
     });
 
     it("Is reverted if is called not by the rescuer", async () => {
@@ -75,9 +72,7 @@ describe("Contract 'RescuableUpgradeable'", async () => {
 
     it("Transfers the correct amount of tokens", async () => {
       await expect(async () => {
-        const txResponse: TransactionResponse =
-          await rescuableMock.connect(user).rescueERC20(brlcMock.address, deployer.address, tokenBalance);
-        await txResponse.wait();
+        await proveTx(rescuableMock.connect(user).rescueERC20(brlcMock.address, deployer.address, tokenBalance));
       }).to.changeTokenBalances(
         brlcMock,
         [rescuableMock, deployer],

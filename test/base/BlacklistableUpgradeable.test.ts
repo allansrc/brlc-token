@@ -1,6 +1,6 @@
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
-import { ContractFactory, Contract } from "ethers";
+import { Contract, ContractFactory } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { TransactionResponse } from "@ethersproject/abstract-provider"
 
@@ -149,7 +149,7 @@ describe("Contract 'BlacklistableUpgradeable'", async () => {
 
     it("Does not revert the target function if the caller is not blacklisted", async () => {
       await expect(blacklistableMock.connect(user2).testNotBlacklistedModifier())
-        .to.be.not.reverted;
+        .to.emit(blacklistableMock, "TestNotBlacklistedModifierSucceeded");
     });
   });
 });

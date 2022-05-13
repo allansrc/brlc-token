@@ -13,6 +13,9 @@ contract WhitelistableUpgradeableMock is WhitelistableUpgradeable {
     bool private _isWhitelistEnabled;
     address private _stubWhitelister;
 
+    event TestOnlyWhitelistAdminModifierSucceeded();
+    event TestOnlyWhitelistedModifierSucceeded();
+
     //This function is intentionally deprived the "initializer" modifier to test that the ancestor contract has it
     function initialize() public {
         __Whitelistable_init();
@@ -31,8 +34,6 @@ contract WhitelistableUpgradeableMock is WhitelistableUpgradeable {
         _isWhitelistEnabled = enabled;
     }
 
-    function testOnlyWhitelistedModifier() external onlyWhitelisted(_msgSender()) {
-    }
 
     function isWhitelister(address account) public override view returns (bool) {
         return (_stubWhitelister == account);
@@ -43,5 +44,10 @@ contract WhitelistableUpgradeableMock is WhitelistableUpgradeable {
     }
 
     function testOnlyWhitelistAdminModifier() external onlyWhitelistAdmin {
+        emit TestOnlyWhitelistAdminModifierSucceeded();
+    }
+
+    function testOnlyWhitelistedModifier() external onlyWhitelisted(_msgSender()) {
+        emit TestOnlyWhitelistedModifierSucceeded();
     }
 }

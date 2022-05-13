@@ -1,6 +1,6 @@
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
-import { ContractFactory, Contract } from "ethers";
+import { Contract, ContractFactory } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { TransactionResponse } from "@ethersproject/abstract-provider"
 
@@ -64,7 +64,8 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
     it("Does not revert the target function if the caller is the whitelist admin", async () => {
       const txResponse: TransactionResponse = await whitelistableMock.setWhitelistAdmin(user.address);
       await txResponse.wait();
-      await expect(whitelistableMock.connect(user).testOnlyWhitelistAdminModifier()).to.be.not.reverted;
+      await expect(whitelistableMock.connect(user).testOnlyWhitelistAdminModifier())
+        .to.emit(whitelistableMock, "TestOnlyWhitelistAdminModifierSucceeded");
     });
   });
 
@@ -153,7 +154,8 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
     it("Does not revert the target function if the caller is whitelisted", async () => {
       const txResponse: TransactionResponse = await whitelistableMock.connect(user).whitelist(deployer.address);
       await txResponse.wait();
-      await expect(whitelistableMock.testOnlyWhitelistedModifier()).to.be.not.reverted;
+      await expect(whitelistableMock.testOnlyWhitelistedModifier())
+        .to.emit(whitelistableMock, "TestOnlyWhitelistedModifierSucceeded");
     });
 
     it("Does not revert the target function if the whitelist is disabled", async () => {
@@ -161,7 +163,8 @@ describe("Contract 'WhitelistableUpgradeable'", async () => {
       await txResponse.wait();
       txResponse = await whitelistableMock.setWhitelistEnabled(false);
       await txResponse.wait();
-      await expect(whitelistableMock.testOnlyWhitelistedModifier()).to.be.not.reverted;
+      await expect(whitelistableMock.testOnlyWhitelistedModifier())
+        .to.emit(whitelistableMock, "TestOnlyWhitelistedModifierSucceeded");
     });
   });
 });

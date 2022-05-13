@@ -10,6 +10,8 @@ import {BlacklistableUpgradeable} from "../base/BlacklistableUpgradeable.sol";
  */
 contract BlacklistableUpgradeableMock is BlacklistableUpgradeable {
 
+    event TestNotBlacklistedModifierSucceeded();
+
     //This function is intentionally deprived the "initializer" modifier to test that the ancestor contract has it
     function initialize() public {
         __Blacklistable_init();
@@ -21,5 +23,6 @@ contract BlacklistableUpgradeableMock is BlacklistableUpgradeable {
     }
 
     function testNotBlacklistedModifier() external notBlacklisted(_msgSender()) {
+        emit TestNotBlacklistedModifierSucceeded();
     }
 }

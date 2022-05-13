@@ -1,6 +1,6 @@
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
-import { ContractFactory, Contract } from "ethers";
+import { Contract, ContractFactory } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { TransactionResponse } from "@ethersproject/abstract-provider"
 
@@ -22,8 +22,8 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
 
   beforeEach(async () => {
     // Deploy the BRLC mock contract
-    const BRLCMock: ContractFactory = await ethers.getContractFactory("ERC20Mock");
-    brlcMock = await BRLCMock.deploy("BRL Coin", "BRLC", 6);
+    const BRLCMock: ContractFactory = await ethers.getContractFactory("ERC20UpgradeableMock");
+    brlcMock = await upgrades.deployProxy(BRLCMock, ["BRL Coin", "BRLC", 6]);
     await brlcMock.deployed();
 
     // Deploy the being tested contract
@@ -56,7 +56,7 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
     });
 
     it("Is reverted if the contract is paused", async () => {
-      let txResponse: TransactionResponse =  await pixCashier.setPauser(deployer.address);
+      let txResponse: TransactionResponse = await pixCashier.setPauser(deployer.address);
       await txResponse.wait();
       txResponse = await pixCashier.pause();
       await txResponse.wait();
@@ -101,7 +101,7 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
     });
 
     it("Is reverted if the contract is paused", async () => {
-      let txResponse: TransactionResponse =  await pixCashier.setPauser(deployer.address);
+      let txResponse: TransactionResponse = await pixCashier.setPauser(deployer.address);
       await txResponse.wait();
       txResponse = await pixCashier.pause();
       await txResponse.wait();
@@ -148,13 +148,15 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
     beforeEach(async () => {
       cashierClient = deployer;
 
-      await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
-      const txResponse: TransactionResponse = await brlcMock.mint(cashierClient.address, tokenAmount);
+      let txResponse: TransactionResponse =
+        await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
+      await txResponse.wait();
+      txResponse = await brlcMock.mint(cashierClient.address, tokenAmount);
       await txResponse.wait();
     })
 
     it("Is reverted if the contract is paused", async () => {
-      let txResponse: TransactionResponse =  await pixCashier.setPauser(deployer.address);
+      let txResponse: TransactionResponse = await pixCashier.setPauser(deployer.address);
       await txResponse.wait();
       txResponse = await pixCashier.pause();
       await txResponse.wait();
@@ -201,13 +203,15 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
     beforeEach(async () => {
       cashierClient = deployer;
 
-      await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
-      const txResponse: TransactionResponse = await brlcMock.mint(cashierClient.address, tokenAmount);
+      let txResponse: TransactionResponse =
+        await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
+      await txResponse.wait();
+      txResponse = await brlcMock.mint(cashierClient.address, tokenAmount);
       await txResponse.wait();
     })
 
     it("Is reverted if the contract is paused", async () => {
-      let txResponse: TransactionResponse =  await pixCashier.setPauser(deployer.address);
+      let txResponse: TransactionResponse = await pixCashier.setPauser(deployer.address);
       await txResponse.wait();
       txResponse = await pixCashier.pause();
       await txResponse.wait();
@@ -262,7 +266,9 @@ describe("Contract 'PixCashierUpgradeable'", async () => {
 
       cashierClientFinalTokenBalance = cashInTokenAmount - cashOutTokenAmount + cashOutReverseTokenAmount;
       cashierClientFinalCashOutBalance = cashOutTokenAmount - cashOutReverseTokenAmount - cashOutConfirmTokenAmount;
-      await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
+      const txResponse: TransactionResponse =
+        await brlcMock.connect(cashierClient).approve(pixCashier.address, ethers.constants.MaxUint256);
+      await txResponse.wait();
     })
 
     it("Leads to correct balances when using several functions", async () => {

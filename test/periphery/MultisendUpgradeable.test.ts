@@ -1,6 +1,6 @@
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
-import { ContractFactory, Contract } from "ethers";
+import { Contract, ContractFactory } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { countNumberArrayTotal } from "../../test-utils/misc";
 import { TransactionResponse } from "@ethersproject/abstract-provider"
@@ -22,8 +22,8 @@ describe("Contract 'MultisendUpgradeable'", async () => {
 
   beforeEach(async () => {
     // Deploy the BRLC mock contract
-    const BRLCMock: ContractFactory = await ethers.getContractFactory("ERC20Mock");
-    brlcMock = await BRLCMock.deploy("BRL Coin", "BRLC", 6);
+    const BRLCMock: ContractFactory = await ethers.getContractFactory("ERC20UpgradeableMock");
+    brlcMock = await upgrades.deployProxy(BRLCMock, ["BRL Coin", "BRLC", 6]);
     await brlcMock.deployed();
 
     // Deploy the being tested contract
@@ -81,7 +81,8 @@ describe("Contract 'MultisendUpgradeable'", async () => {
     });
 
     it("Is reverted if the contract has not enough tokens to execute all transfers", async () => {
-      await brlcMock.mint(multisend.address, balanceTotal - balances[0]);
+      const txResponse: TransactionResponse = await brlcMock.mint(multisend.address, balanceTotal - balances[0]);
+      await txResponse.wait();
       await expect(multisend.connect(user).multisendToken(brlcMock.address, recipientAddresses, balances))
         .to.be.revertedWith(REVERT_MESSAGE_IF_TOKEN_TRANSFER_AMOUNT_EXCEEDS_BALANCE);
     });

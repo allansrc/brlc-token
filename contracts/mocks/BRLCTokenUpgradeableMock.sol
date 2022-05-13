@@ -10,6 +10,8 @@ import {BRLCTokenUpgradeable} from "../tokens/BRLCTokenUpgradeable.sol";
  */
 contract BRLCTokenUpgradeableMock is BRLCTokenUpgradeable {
 
+    event TestBeforeTokenTransferSucceeded();
+
     //This function is intentionally deprived the "initializer" modifier to test that the ancestor contract has it
     function initialize(
         string memory name_,
@@ -37,5 +39,6 @@ contract BRLCTokenUpgradeableMock is BRLCTokenUpgradeable {
         uint256 amount
     ) external {
         _beforeTokenTransfer(from, to, amount);
+        emit TestBeforeTokenTransferSucceeded();
     }
 }

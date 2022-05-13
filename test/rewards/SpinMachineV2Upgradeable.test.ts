@@ -1,6 +1,6 @@
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
-import { ContractFactory, Contract } from "ethers";
+import { Contract, ContractFactory } from "ethers";
 import { TransactionResponse } from "@ethersproject/abstract-provider";
 
 describe("Contract 'SpinMachineV2Upgradeable'", async () => {
@@ -11,8 +11,8 @@ describe("Contract 'SpinMachineV2Upgradeable'", async () => {
 
   beforeEach(async () => {
     // Deploy BRLC
-    const BrlcMock: ContractFactory = await ethers.getContractFactory("ERC20Mock");
-    brlcMock = await BrlcMock.deploy("BRL Coin", "BRLC", 6);
+    const BRLCMock: ContractFactory = await ethers.getContractFactory("ERC20UpgradeableMock");
+    brlcMock = await upgrades.deployProxy(BRLCMock, ["BRL Coin", "BRLC", 6]);
     await brlcMock.deployed();
 
     // Deploy RandomProvider

@@ -1,6 +1,6 @@
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
-import { ContractFactory, Contract } from "ethers";
+import { Contract, ContractFactory } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { TransactionResponse } from "@ethersproject/abstract-provider"
 
@@ -58,8 +58,8 @@ describe("Contract 'RescuableUpgradeable'", async () => {
     let brlcMock: Contract;
 
     beforeEach(async () => {
-      const BRLCMock: ContractFactory = await ethers.getContractFactory("ERC20Mock");
-      brlcMock = await BRLCMock.deploy("BRL Coin", "BRLC", 6);
+      const BRLCMock: ContractFactory = await ethers.getContractFactory("ERC20UpgradeableMock");
+      brlcMock = await upgrades.deployProxy(BRLCMock, ["BRL Coin", "BRLC", 6]);
       await brlcMock.deployed();
 
       let txResponse: TransactionResponse = await brlcMock.mint(rescuableMock.address, tokenBalance);
@@ -73,19 +73,16 @@ describe("Contract 'RescuableUpgradeable'", async () => {
         .to.be.revertedWith(REVERT_MESSAGE_IF_CALLER_IS_NOT_RESCUER);
     });
 
-    it.only("Transfers the correct amount of tokens", async () => {
-      const txResponse: TransactionResponse =
-        await rescuableMock.connect(user).rescueERC20(brlcMock.address, deployer.address, tokenBalance);
-      await txResponse.wait();
-      // await expect(async () => {
-      //   const txResponse: TransactionResponse =
-      //     await rescuableMock.connect(user).rescueERC20(brlcMock.address, deployer.address, tokenBalance);
-      //   await txResponse.wait();
-      // }).to.changeTokenBalances(
-      //   brlcMock,
-      //   [rescuableMock, deployer],
-      //   [-tokenBalance, tokenBalance]
-      // );
+    it("Transfers the correct amount of tokens", async () => {
+      await expect(async () => {
+        const txResponse: TransactionResponse =
+          await rescuableMock.connect(user).rescueERC20(brlcMock.address, deployer.address, tokenBalance);
+        await txResponse.wait();
+      }).to.changeTokenBalances(
+        brlcMock,
+        [rescuableMock, deployer],
+        [-tokenBalance, tokenBalance]
+      );
     });
   });
 });

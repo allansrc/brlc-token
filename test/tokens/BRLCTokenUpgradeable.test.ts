@@ -1,6 +1,6 @@
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
-import { ContractFactory, Contract, BigNumber } from "ethers";
+import { BigNumber, Contract, ContractFactory } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { TransactionResponse } from "@ethersproject/abstract-provider";
 
@@ -133,8 +133,9 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
     const tokenAmount: number = 123;
 
     beforeEach(async () => {
-      await brlcToken.approve(user1.address, tokenAmount);
-      const txResponse: TransactionResponse = await brlcToken.mint(deployer.address, tokenAmount);
+      let txResponse: TransactionResponse = await brlcToken.approve(user1.address, tokenAmount);
+      await txResponse.wait();
+      txResponse = await brlcToken.mint(deployer.address, tokenAmount);
       await txResponse.wait();
     })
 
@@ -289,7 +290,7 @@ describe("Contract 'BRLCTokenUpgradeable'", async () => {
 
     it("Is not reverted if the contract is not paused", async () => {
       await expect(brlcToken.testBeforeTokenTransfer(user1.address, user2.address, tokenAmount))
-        .to.be.not.reverted;
+        .to.emit(brlcToken, "TestBeforeTokenTransferSucceeded");
     });
   });
 });
